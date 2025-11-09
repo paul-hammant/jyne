@@ -25,7 +25,7 @@ npm install jyne
 
 ## Quick Start
 
-Here's a simple Hello World app:
+### TypeScript
 
 ```typescript
 import { app, window, vbox, button, label } from 'jyne';
@@ -41,6 +41,42 @@ app({ title: "Hello Jyne" }, () => {
   });
 });
 ```
+
+### JavaScript (CommonJS)
+
+```javascript
+const { app, window, vbox, button, label } = require('jyne');
+
+app({ title: "Hello Jyne" }, () => {
+  window({ title: "Hello World" }, () => {
+    vbox(() => {
+      label("Welcome to Jyne!");
+      button("Click Me", () => {
+        console.log("Button clicked!");
+      });
+    });
+  });
+});
+```
+
+### JavaScript (ES Modules)
+
+```javascript
+import { app, window, vbox, button, label } from 'jyne';
+
+app({ title: "Hello Jyne" }, () => {
+  window({ title: "Hello World" }, () => {
+    vbox(() => {
+      label("Welcome to Jyne!");
+      button("Click Me", () => {
+        console.log("Button clicked!");
+      });
+    });
+  });
+});
+```
+
+Jyne works seamlessly with both TypeScript and JavaScript!
 
 ## Elegant Syntax
 
@@ -292,14 +328,144 @@ npm run build
 node examples/calculator.js
 ```
 
-### Test Applications
+### Test Applications - Two Architectural Patterns
 
-Check out the `test-apps/` directory for production-quality, fully tested applications:
+We provide **two calculator implementations** demonstrating different approaches:
 
-- **Calculator** (`test-apps/calculator/`) - Full-featured calculator with comprehensive test suite
-  - Run: `npm run run:calculator`
-  - Test: `npm run test:calculator`
-  - See [test-apps/calculator/README.md](test-apps/calculator/README.md) for details
+#### 1. Simple Calculator - Monolithic Pattern
+
+**Best for:** Learning, prototypes, demos < 200 lines
+
+```
+test-apps/calculator-simple/
+├── calculator.ts (150 lines - all in one file)
+├── calculator.test.ts (JyneTest only)
+└── README.md
+```
+
+**Features:**
+- All code in one place
+- Simple and straightforward
+- Quick to prototype
+- JyneTest integration tests only
+
+**Trade-offs:**
+- Cannot unit test logic separately
+- Slower test feedback (~3s)
+- Hard to maintain at scale
+
+```bash
+npm run run:calculator-simple
+npm run test:calculator-simple
+```
+
+#### 2. Advanced Calculator - Decomposed Pattern
+
+**Best for:** Production apps, teams, complex logic, TDD
+
+```
+test-apps/calculator-advanced/
+├── calculator-logic.ts (Pure business logic)
+├── calculator-logic.test.ts (34 Jest unit tests)
+├── calculator-ui.ts (UI presentation)
+├── calculator.test.ts (11 JyneTest integration tests)
+└── README.md + TESTING-STRATEGY.md
+```
+
+**Features:**
+- Separated business logic and UI
+- Fast Jest unit tests (~100ms for 34 tests)
+- TDD-friendly development
+- Reusable logic (CLI, web, API)
+- Comprehensive test coverage (45 tests total)
+
+**Trade-offs:**
+- More files and boilerplate
+- Higher learning curve
+
+```bash
+npm run run:calculator          # Run the app
+npm run test:calculator         # Integration tests
+npm run test:calculator:logic   # Unit tests (fast!)
+npm test                        # All tests
+```
+
+**See [test-apps/README.md](test-apps/README.md) for detailed comparison and decision guide.**
+
+## Architecture Patterns
+
+### Monolithic (Simple) vs Decomposed (Advanced)
+
+Jyne supports two architectural patterns for building applications:
+
+| Pattern | When to Use | Testing Approach |
+|---------|-------------|------------------|
+| **Monolithic** | Demos, prototypes, < 200 lines | JyneTest integration tests only |
+| **Decomposed** | Production, teams, complex logic | Jest unit tests + JyneTest integration |
+
+**Monolithic Example:**
+```typescript
+// All in one file
+let count = 0;
+let display: any;
+
+function increment() {
+  count++;
+  display.setText(`Count: ${count}`);  // UI coupled with logic
+}
+
+app(() => {
+  display = label("Count: 0");
+  button("+", increment);
+});
+```
+
+**Decomposed Example:**
+```typescript
+// calculator-logic.ts (testable with Jest!)
+export class CalculatorLogic {
+  private count = 0;
+
+  increment(): number {
+    return ++this.count;
+  }
+
+  getDisplay(): string {
+    return `Count: ${this.count}`;
+  }
+}
+
+// calculator-ui.ts
+import { CalculatorLogic } from './calculator-logic';
+
+export class CalculatorUI {
+  private logic = new CalculatorLogic();
+  private display: any;
+
+  build() {
+    this.display = label(this.logic.getDisplay());
+    button("+", () => {
+      this.logic.increment();
+      this.display.setText(this.logic.getDisplay());
+    });
+  }
+}
+
+// calculator-logic.test.ts (Jest - fast!)
+test('increment', () => {
+  const calc = new CalculatorLogic();
+  expect(calc.increment()).toBe(1);
+  expect(calc.getDisplay()).toBe("Count: 1");
+});
+```
+
+**Benefits of Decomposed Pattern:**
+- ✅ Fast unit tests (100ms vs 3s)
+- ✅ TDD-friendly
+- ✅ Reusable logic
+- ✅ Easy to maintain
+
+**See [test-apps/README.md](test-apps/README.md) for complete comparison and migration guide.**
 
 ## Design Philosophy
 
@@ -351,11 +517,22 @@ MIT License - see [LICENSE](LICENSE) file for details
 
 ## Documentation
 
+### Getting Started
 - **[QUICKSTART.md](QUICKSTART.md)** - Get started in 5 minutes
+- **[README.md](README.md)** - You are here! Main documentation
+
+### Testing
 - **[TESTING.md](TESTING.md)** - Complete guide to JyneTest testing framework
+- **[test-apps/README.md](test-apps/README.md)** - Two architectural patterns comparison
+- **[calculator-simple/README.md](test-apps/calculator-simple/README.md)** - Monolithic pattern
+- **[calculator-advanced/README.md](test-apps/calculator-advanced/README.md)** - Decomposed pattern
+- **[calculator-advanced/TESTING-STRATEGY.md](test-apps/calculator-advanced/TESTING-STRATEGY.md)** - Two-tier testing
+
+### Development
 - **[ARCHITECTURE.md](ARCHITECTURE.md)** - Internal design and architecture
 - **[CONTRIBUTING.md](CONTRIBUTING.md)** - Guide for contributors
-- **[test-apps/calculator/README.md](test-apps/calculator/README.md)** - Example testable application
+- **[PUBLISHING.md](PUBLISHING.md)** - Publishing to npm with bundled binaries
+- **[ROADMAP.md](ROADMAP.md)** - Feature roadmap and TODO list
 
 ## Acknowledgments
 
