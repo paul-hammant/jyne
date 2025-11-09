@@ -1,0 +1,40 @@
+{
+  "name": "jyne",
+  "version": "0.1.0",
+  "description": "Elegant TypeScript wrapper for Fyne - Build beautiful cross-platform desktop UIs with Node.js",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "build:bridge": "cd bridge && go build -o ../bin/jyne-bridge",
+    "prepare": "npm run build:bridge && npm run build",
+    "example": "npm run build && node examples/calculator.js",
+    "test": "jest",
+    "clean": "rm -rf dist bin"
+  },
+  "keywords": [
+    "fyne",
+    "ui",
+    "gui",
+    "desktop",
+    "typescript",
+    "nodejs",
+    "cross-platform"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {},
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "files": [
+    "dist",
+    "bin",
+    "README.md",
+    "LICENSE"
+  ]
+}
