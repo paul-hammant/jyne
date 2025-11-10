@@ -6,6 +6,181 @@ This document describes the internal architecture of Jyne.
 
 Jyne bridges TypeScript/Node.js with Go's Fyne UI toolkit using a child process and JSON-RPC communication over stdio.
 
+## Module Architecture
+
+### Module Diagram
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                          User Application                                    │
+│                          (TypeScript/Node.js)                                │
+└─────────────────────────────────────┬───────────────────────────────────────┘
+                                      │ imports
+                                      ↓
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                        Jyne Client Library (src/)                            │
+├─────────────────────────────────────────────────────────────────────────────┤
+│  ┌─────────────┐                                                             │
+│  │  index.ts   │  Main entry point, exports declarative API                 │
+│  │  src/       │  (app, window, button, label, etc.)                        │
+│  └──────┬──────┘                                                             │
+│         │ uses                                                               │
+│         ↓                                                                    │
+│  ┌─────────────────────────────────────────────────────────┐                │
+│  │  App Lifecycle & Window Management                       │                │
+│  ├─────────────────────────────────────────────────────────┤                │
+│  │  app.ts       - Application lifecycle management        │                │
+│  │  src/         - Main app instance                       │                │
+│  │                                                          │                │
+│  │  window.ts    - Window creation and management          │                │
+│  │  src/         - Multiple windows support                │                │
+│  └────────┬────────────────────────────────────────────────┘                │
+│           │ uses                                                             │
+│           ↓                                                                  │
+│  ┌─────────────────────────────────────────────────────────┐                │
+│  │  Core Infrastructure                                     │                │
+│  ├─────────────────────────────────────────────────────────┤                │
+│  │  context.ts   - Widget ID generation                    │                │
+│  │  src/         - Window/container stack management       │                │
+│  │               - Declarative API context tracking        │                │
+│  │                                                          │                │
+│  │  bridge.ts    - IPC with Go bridge process              │                │
+│  │  src/         - JSON-RPC message handling               │                │
+│  │               - Callback registration                   │                │
+│  │               - Child process management                │                │
+│  └────────┬────────────────────────────────────────────────┘                │
+│           │ uses                                                             │
+│           ↓                                                                  │
+│  ┌─────────────────────────────────────────────────────────┐                │
+│  │  UI Components & Features                                │                │
+│  ├─────────────────────────────────────────────────────────┤                │
+│  │  widgets.ts   - All widget classes                      │                │
+│  │  src/         - Button, Label, Entry, etc.              │                │
+│  │               - Layouts (VBox, HBox, Grid, etc.)        │                │
+│  │               - Advanced widgets (Table, Tree, etc.)    │                │
+│  │                                                          │                │
+│  │  styles.ts    - CSS-like styling system                 │                │
+│  │  src/         - Font, color, text alignment             │                │
+│  │               - Stylesheet management                   │                │
+│  │                                                          │                │
+│  │  state.ts     - Reactive state management               │                │
+│  │  src/         - Observable state for data binding       │                │
+│  │                                                          │                │
+│  │  browser.ts   - Browser/menu system                     │                │
+│  │  src/         - Navigation, menu bar, toolbar           │                │
+│  └─────────────────────────────────────────────────────────┘                │
+│                                                                               │
+│  ┌─────────────────────────────────────────────────────────┐                │
+│  │  Testing Framework                                       │                │
+│  ├─────────────────────────────────────────────────────────┤                │
+│  │  test.ts              - Headless testing utilities      │                │
+│  │  src/                 - Test helpers                    │                │
+│  │                                                          │                │
+│  │  jyne-test.ts         - JyneTest framework              │                │
+│  │  src/                 - Widget testing API              │                │
+│  │                                                          │                │
+│  │  jyne-browser-test.ts - Browser testing framework       │                │
+│  │  src/                 - Page navigation testing         │                │
+│  │                                                          │                │
+│  │  index-test.ts        - Test mode entry point           │                │
+│  │  src/                 - Headless mode setup             │                │
+│  └─────────────────────────────────────────────────────────┘                │
+└─────────────────────────────────────┬───────────────────────────────────────┘
+                                      │ JSON-RPC over stdio
+                                      │ (spawns child process)
+                                      ↓
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                      Jyne Bridge (bridge/)                                   │
+├─────────────────────────────────────────────────────────────────────────────┤
+│  ┌─────────────┐                                                             │
+│  │  main.go    │  Go bridge process                                         │
+│  │  bridge/    │  - JSON-RPC message handler                                │
+│  └──────┬──────┘  - Widget registry                                         │
+│         │         - Fyne object lifecycle management                        │
+│         │         - Event callback dispatching                              │
+│         │                                                                    │
+│         │ uses                                                               │
+│         ↓                                                                    │
+│  ┌─────────────┐                                                             │
+│  │  go.mod     │  Go module dependencies                                    │
+│  │  bridge/    │                                                             │
+│  └─────────────┘                                                             │
+└─────────────────────────────────────┬───────────────────────────────────────┘
+                                      │ uses (external)
+                                      ↓
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                    Fyne UI Toolkit (EXTERNAL)                                │
+│                    fyne.io/fyne/v2                                           │
+├─────────────────────────────────────────────────────────────────────────────┤
+│  - Native widget rendering                                                   │
+│  - Cross-platform UI abstraction                                            │
+│  - Window management                                                         │
+│  - Event handling                                                            │
+│  - Theme system                                                              │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
+### Module Reference Table
+
+| Module | Path | Purpose | Key Dependencies |
+|--------|------|---------|------------------|
+| **index.ts** | `src/index.ts` | Main entry point, exports declarative API | app.ts, window.ts, widgets.ts |
+| **app.ts** | `src/app.ts` | Application lifecycle management | bridge.ts, context.ts, window.ts |
+| **window.ts** | `src/window.ts` | Window creation and management | bridge.ts, context.ts |
+| **widgets.ts** | `src/widgets.ts` | All widget classes and layouts | context.ts, bridge.ts, styles.ts |
+| **bridge.ts** | `src/bridge.ts` | IPC bridge to Go process | Node.js child_process |
+| **context.ts** | `src/context.ts` | Widget ID generation, stack management | bridge.ts |
+| **styles.ts** | `src/styles.ts` | CSS-like styling system | context.ts, bridge.ts |
+| **state.ts** | `src/state.ts` | Reactive state management | - |
+| **browser.ts** | `src/browser.ts` | Browser/menu/navigation system | app.ts, window.ts, widgets.ts |
+| **test.ts** | `src/test.ts` | Headless testing utilities | bridge.ts |
+| **jyne-test.ts** | `src/jyne-test.ts` | JyneTest widget testing framework | test.ts, app.ts |
+| **jyne-browser-test.ts** | `src/jyne-browser-test.ts` | Browser testing framework | jyne-test.ts, browser.ts |
+| **index-test.ts** | `src/index-test.ts` | Test mode entry point | jyne-test.ts, jyne-browser-test.ts |
+| **main.go** | `bridge/main.go` | Go bridge process | **fyne.io/fyne/v2** (EXTERNAL) |
+| **go.mod** | `bridge/go.mod` | Go module definition | - |
+
+### Data Flow
+
+```
+User Code                                Bridge Process               Fyne
+─────────                                ──────────────               ────
+
+button("Click", cb)
+   │
+   ├─> generateId("button")
+   │   └─> "button_1"
+   │
+   ├─> registerEventHandler("callback_1", cb)
+   │
+   └─> bridge.send({                      ──> JSON decode
+         type: "createButton"                  │
+         payload: {                            ├─> widget.NewButton(...)
+           id: "button_1"                      │   └─> Store in registry
+           text: "Click"                       │
+           callbackId: "callback_1"            ├─> button.OnTapped = ...
+         }                                     │
+       })                                      └─> JSON encode response
+         │                                           │
+         └─────<─── response ────────────────<──────┘
+
+
+[User clicks button in UI]
+                                                      Fyne triggers
+                                                      OnTapped callback
+                                                           │
+bridge receives event <───── JSON encode <───────────────┘
+   │                         {
+   │                           type: "callback"
+   │                           data: {
+   │                             callbackId: "callback_1"
+   │                           }
+   │                         }
+   │
+   └─> lookup handler("callback_1")
+       └─> execute cb()
+```
+
 ## Components
 
 ### 1. TypeScript Client (`src/`)
