@@ -3,6 +3,12 @@
  *
  * Enables dynamic loading of Jyne TypeScript pages from HTTP servers,
  * similar to how Mosaic/Firefox/Chrome load HTML pages.
+ *
+ * Architecture:
+ * - ONE persistent browser window (like real browsers)
+ * - Browser chrome (address bar, navigation buttons)
+ * - Pages render into content area only
+ * - Window size controlled by user, not pages
  */
 
 import http from 'http';
@@ -10,7 +16,7 @@ import https from 'https';
 import { URL } from 'url';
 import { App } from './app';
 import { Window } from './window';
-import { Context } from './context';
+import { Entry } from './widgets';
 
 /**
  * Browser context passed to loaded pages
@@ -24,6 +30,9 @@ export interface BrowserContext {
 
   /** Navigate to a new URL */
   changePage: (url: string) => Promise<void>;
+
+  /** Reload current page */
+  reload: () => Promise<void>;
 
   /** Current URL */
   currentUrl: string;
@@ -45,33 +54,92 @@ interface HistoryEntry {
  *
  * Similar to Swiby's browser concept - loads pages dynamically from servers
  * that can be implemented in any language (Spring, Sinatra, Flask, etc.)
+ *
+ * Key feature: Uses ONE persistent window, pages render into content area
  */
 export class Browser {
   private app: App;
-  private window: Window | null = null;
+  private window: Window;
+  private addressBarEntry: Entry | null = null;
   private history: HistoryEntry[] = [];
   private historyIndex: number = -1;
   private currentUrl: string = '';
   private loading: boolean = false;
+  private currentPageBuilder: (() => void) | null = null;
 
   constructor(options?: { title?: string; width?: number; height?: number }) {
     this.app = new App({ title: options?.title || 'Jyne Browser' });
 
-    // Create browser window
+    // Create ONE persistent browser window
     this.window = this.app.window(
       {
         title: options?.title || 'Jyne Browser',
-        width: options?.width || 800,
-        height: options?.height || 600
+        width: options?.width || 900,
+        height: options?.height || 700
       },
       (win) => {
-        // Initial empty state
-        win.setContent(() => {
-          const { label } = require('./index');
-          label('Browser starting...');
-        });
+        this.initializeWindow(win);
       }
     );
+  }
+
+  /**
+   * Initialize the browser window with chrome and content area
+   */
+  private initializeWindow(win: Window): void {
+    win.setContent(() => {
+      this.buildWindowContent();
+    });
+  }
+
+  /**
+   * Build the complete window content: browser chrome + page content
+   */
+  private buildWindowContent(): void {
+    const { vbox, hbox, button, entry, separator, scroll, label } = require('./index');
+
+    vbox(() => {
+      // Browser chrome (address bar and navigation buttons)
+      hbox(() => {
+        button('←', () => {
+          this.back().catch(err => console.error('Back failed:', err));
+        });
+
+        button('→', () => {
+          this.forward().catch(err => console.error('Forward failed:', err));
+        });
+
+        button('⟳', () => {
+          this.reload().catch(err => console.error('Reload failed:', err));
+        });
+
+        this.addressBarEntry = entry(this.currentUrl || 'http://');
+
+        button('Go', async () => {
+          if (this.addressBarEntry) {
+            const url = await this.addressBarEntry.getText();
+            await this.changePage(url);
+          }
+        });
+      });
+
+      separator();
+
+      // Page content area (scrollable)
+      scroll(() => {
+        vbox(() => {
+          if (this.currentPageBuilder) {
+            // Render current page content
+            this.currentPageBuilder();
+          } else {
+            // Welcome message when no page loaded
+            label('Jyne Browser');
+            label('');
+            label('Enter a URL in the address bar and click Go to navigate.');
+          }
+        });
+      });
+    });
   }
 
   /**
@@ -85,6 +153,11 @@ export class Browser {
 
     this.loading = true;
     this.currentUrl = url;
+
+    // Update address bar
+    if (this.addressBarEntry) {
+      this.addressBarEntry.setText(url);
+    }
 
     try {
       // Fetch page code from server
@@ -119,6 +192,12 @@ export class Browser {
     this.historyIndex--;
     const entry = this.history[this.historyIndex];
     this.currentUrl = entry.url;
+
+    // Update address bar
+    if (this.addressBarEntry) {
+      this.addressBarEntry.setText(this.currentUrl);
+    }
+
     await this.renderPage(entry.pageCode);
   }
 
@@ -134,7 +213,23 @@ export class Browser {
     this.historyIndex++;
     const entry = this.history[this.historyIndex];
     this.currentUrl = entry.url;
+
+    // Update address bar
+    if (this.addressBarEntry) {
+      this.addressBarEntry.setText(this.currentUrl);
+    }
+
     await this.renderPage(entry.pageCode);
+  }
+
+  /**
+   * Reload current page
+   */
+  async reload(): Promise<void> {
+    if (this.currentUrl && this.historyIndex >= 0) {
+      const entry = this.history[this.historyIndex];
+      await this.renderPage(entry.pageCode);
+    }
   }
 
   /**
@@ -183,39 +278,75 @@ export class Browser {
   }
 
   /**
-   * Render a page from its code
+   * Render a page from its code into the browser window
    */
   private async renderPage(pageCode: string): Promise<void> {
-    if (!this.window) return;
-
     // Create browser context for the page
     const browserContext: BrowserContext = {
       back: () => this.back(),
       forward: () => this.forward(),
       changePage: (url: string) => this.changePage(url),
+      reload: () => this.reload(),
       currentUrl: this.currentUrl,
       browser: this
     };
 
-    // Execute the page code with browser context
     try {
-      // The page code should be a function that receives browserContext
-      // and uses the Jyne API to build the page
-      const pageFunction = new Function('browserContext', 'jyne', pageCode);
+      // Capture the content builder from page code
+      // Pages currently call jyne.window() which creates a window
+      // We intercept this and extract just the content
+      let capturedContentBuilder: (() => void) | null = null;
 
-      // Re-render the window with the page content
-      this.window = this.app.window(
-        {
-          title: `Jyne Browser - ${this.currentUrl}`,
-          width: 800,
-          height: 600
-        },
-        (win) => {
-          // Page function builds the UI using Jyne API
-          const jyne = require('./index');
-          pageFunction(browserContext, jyne);
+      // Create mock jyne object that intercepts window() calls
+      const jyne = require('./index');
+      const mockJyne = {
+        ...jyne,
+        // Intercept window() to extract content builder
+        window: (options: any, builder: (win: any) => void) => {
+          // Create mock window that captures setContent() calls
+          const mockWindow = {
+            setContent: (contentBuilder: () => void) => {
+              capturedContentBuilder = contentBuilder;
+            },
+            show: () => {
+              // No-op - browser window is already shown
+            },
+            // Provide other window methods as no-ops
+            showInfo: () => Promise.resolve(),
+            showError: () => Promise.resolve(),
+            showConfirm: () => Promise.resolve(false),
+            showFileOpen: () => Promise.resolve(null),
+            showFileSave: () => Promise.resolve(null),
+            setMainMenu: () => Promise.resolve(),
+            resize: () => {},
+            centerOnScreen: () => {},
+            setFullScreen: () => {}
+          };
+
+          // Call the page's window builder with our mock
+          builder(mockWindow);
         }
-      );
+      };
+
+      // Execute page code with mock jyne
+      const pageFunction = new Function('browserContext', 'jyne', pageCode);
+      pageFunction(browserContext, mockJyne);
+
+      // Update current page builder and re-render window
+      if (capturedContentBuilder) {
+        this.currentPageBuilder = capturedContentBuilder;
+      } else {
+        // Fallback if page doesn't use window().setContent()
+        this.currentPageBuilder = () => {
+          const { label } = require('./index');
+          label('Page rendered without content builder');
+        };
+      }
+
+      // Re-render the entire window (chrome + new content)
+      this.window.setContent(() => {
+        this.buildWindowContent();
+      });
 
       await this.window.show();
     } catch (error) {
@@ -224,35 +355,32 @@ export class Browser {
   }
 
   /**
-   * Show error page
+   * Show error page in the content area
    */
   private async showError(url: string, error: any): Promise<void> {
-    if (!this.window) return;
+    // Create error content builder
+    this.currentPageBuilder = () => {
+      const { vbox, label, button } = require('./index');
 
-    this.window = this.app.window(
-      {
-        title: 'Jyne Browser - Error',
-        width: 800,
-        height: 600
-      },
-      (win) => {
-        win.setContent(() => {
-          const { vbox, label, button } = require('./index');
+      vbox(() => {
+        label('Error Loading Page');
+        label('');
+        label(`URL: ${url}`);
+        label(`Error: ${error.message || error}`);
+        label('');
 
-          vbox(() => {
-            label('Error Loading Page');
-            label('');
-            label(`URL: ${url}`);
-            label(`Error: ${error.message || error}`);
-            label('');
-
-            if (this.historyIndex > 0) {
-              button('Go Back', () => this.back());
-            }
+        if (this.historyIndex > 0) {
+          button('Go Back', () => {
+            this.back().catch(err => console.error('Back failed:', err));
           });
-        });
-      }
-    );
+        }
+      });
+    };
+
+    // Re-render window with error content
+    this.window.setContent(() => {
+      this.buildWindowContent();
+    });
 
     await this.window.show();
   }
