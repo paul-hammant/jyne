@@ -297,6 +297,17 @@ Window methods:
 - **`entry(placeholder?)`**: Create a text input
   - `placeholder`: Placeholder text (optional)
 
+- **`multilineentry(placeholder?, wrapping?)`**: Create a multi-line text input
+  - `placeholder`: Placeholder text (optional)
+  - `wrapping`: Text wrapping mode - 'off', 'word', or 'break' (optional, defaults to 'word')
+  - Perfect for notes, comments, and longer text input
+  - Methods: `setText(text: string)`, `getText(): Promise<string>`
+
+- **`passwordentry(placeholder?)`**: Create a password input (masked text)
+  - `placeholder`: Placeholder text (optional)
+  - Characters are masked for security
+  - Methods: `setText(text: string)`, `getText(): Promise<string>`
+
 #### Input Widgets
 
 - **`checkbox(text, onChanged?)`**: Create a checkbox
@@ -328,6 +339,16 @@ Window methods:
   - `initialValue`: Starting progress value 0.0 to 1.0 (optional)
   - `infinite`: Set to true for indeterminate progress (optional)
   - Methods: `setProgress(value: number)`, `getProgress(): Promise<number>`
+
+- **`separator()`**: Create a visual separator line
+  - Creates a horizontal line to visually separate sections
+  - Improves UI organization and readability
+
+- **`hyperlink(text, url)`**: Create a clickable hyperlink
+  - `text`: Link text to display
+  - `url`: URL to open when clicked
+  - Opens URL in the default browser
+  - Example: `hyperlink('Visit GitHub', 'https://github.com')`
 
 #### UI Components
 
@@ -782,6 +803,7 @@ Check out the `examples/` directory:
 - `form.ts` - Form with text inputs
 
 **Widget Examples:**
+- `input-widgets.ts` - MultiLineEntry, PasswordEntry, Separator, and Hyperlink widgets
 - `checkbox.ts` - Checkbox with state tracking and callbacks
 - `select.ts` - Dropdown select with multiple options
 - `slider.ts` - Slider controls for volume, brightness, etc.
@@ -817,6 +839,7 @@ Run an example:
 ```bash
 npm run build
 node examples/calculator.js
+node examples/input-widgets.js
 node examples/checkbox.js
 node examples/select.js
 node examples/slider.js

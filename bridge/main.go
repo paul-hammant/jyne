@@ -109,6 +109,14 @@ func (b *Bridge) handleMessage(msg Message) {
 		b.handleCreateLabel(msg)
 	case "createEntry":
 		b.handleCreateEntry(msg)
+	case "createMultiLineEntry":
+		b.handleCreateMultiLineEntry(msg)
+	case "createPasswordEntry":
+		b.handleCreatePasswordEntry(msg)
+	case "createSeparator":
+		b.handleCreateSeparator(msg)
+	case "createHyperlink":
+		b.handleCreateHyperlink(msg)
 	case "createVBox":
 		b.handleCreateVBox(msg)
 	case "createHBox":
@@ -353,6 +361,103 @@ func (b *Bridge) handleCreateEntry(msg Message) {
 	b.mu.Lock()
 	b.widgets[widgetID] = entry
 	b.widgetMeta[widgetID] = WidgetMetadata{Type: "entry", Text: ""}
+	b.mu.Unlock()
+
+	b.sendResponse(Response{
+		ID:      msg.ID,
+		Success: true,
+		Result:  map[string]interface{}{"widgetId": widgetID},
+	})
+}
+
+func (b *Bridge) handleCreateMultiLineEntry(msg Message) {
+	widgetID := msg.Payload["id"].(string)
+	placeholder, _ := msg.Payload["placeholder"].(string)
+
+	entry := widget.NewMultiLineEntry()
+	entry.SetPlaceHolder(placeholder)
+
+	// Set wrapping mode (default to word wrap)
+	if wrapping, ok := msg.Payload["wrapping"].(string); ok {
+		switch wrapping {
+		case "off":
+			entry.Wrapping = fyne.TextWrapOff
+		case "word":
+			entry.Wrapping = fyne.TextWrapWord
+		case "break":
+			entry.Wrapping = fyne.TextWrapBreak
+		}
+	}
+
+	b.mu.Lock()
+	b.widgets[widgetID] = entry
+	b.widgetMeta[widgetID] = WidgetMetadata{Type: "multilineentry", Text: ""}
+	b.mu.Unlock()
+
+	b.sendResponse(Response{
+		ID:      msg.ID,
+		Success: true,
+		Result:  map[string]interface{}{"widgetId": widgetID},
+	})
+}
+
+func (b *Bridge) handleCreatePasswordEntry(msg Message) {
+	widgetID := msg.Payload["id"].(string)
+	placeholder, _ := msg.Payload["placeholder"].(string)
+
+	entry := widget.NewPasswordEntry()
+	entry.SetPlaceHolder(placeholder)
+
+	b.mu.Lock()
+	b.widgets[widgetID] = entry
+	b.widgetMeta[widgetID] = WidgetMetadata{Type: "passwordentry", Text: ""}
+	b.mu.Unlock()
+
+	b.sendResponse(Response{
+		ID:      msg.ID,
+		Success: true,
+		Result:  map[string]interface{}{"widgetId": widgetID},
+	})
+}
+
+func (b *Bridge) handleCreateSeparator(msg Message) {
+	widgetID := msg.Payload["id"].(string)
+
+	separator := widget.NewSeparator()
+
+	b.mu.Lock()
+	b.widgets[widgetID] = separator
+	b.widgetMeta[widgetID] = WidgetMetadata{Type: "separator", Text: ""}
+	b.mu.Unlock()
+
+	b.sendResponse(Response{
+		ID:      msg.ID,
+		Success: true,
+		Result:  map[string]interface{}{"widgetId": widgetID},
+	})
+}
+
+func (b *Bridge) handleCreateHyperlink(msg Message) {
+	widgetID := msg.Payload["id"].(string)
+	text := msg.Payload["text"].(string)
+	urlStr := msg.Payload["url"].(string)
+
+	// Parse URL
+	url, err := storage.ParseURI(urlStr)
+	if err != nil {
+		b.sendResponse(Response{
+			ID:      msg.ID,
+			Success: false,
+			Error:   fmt.Sprintf("Invalid URL: %v", err),
+		})
+		return
+	}
+
+	hyperlink := widget.NewHyperlink(text, url)
+
+	b.mu.Lock()
+	b.widgets[widgetID] = hyperlink
+	b.widgetMeta[widgetID] = WidgetMetadata{Type: "hyperlink", Text: text}
 	b.mu.Unlock()
 
 	b.sendResponse(Response{
