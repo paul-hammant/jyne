@@ -1,6 +1,6 @@
 import { App, AppOptions } from './app';
 import { Context } from './context';
-import { Button, Label, Entry, VBox, HBox, Checkbox, Select, Slider, ProgressBar, Scroll, Grid, RadioGroup, Split, Tabs, Toolbar, Table, List } from './widgets';
+import { Button, Label, Entry, MultiLineEntry, PasswordEntry, Separator, Hyperlink, VBox, HBox, Checkbox, Select, Slider, ProgressBar, Scroll, Grid, RadioGroup, Split, Tabs, Toolbar, Table, List } from './widgets';
 import { Window, WindowOptions } from './window';
 
 // Global context for the declarative API
@@ -80,6 +80,46 @@ export function entry(placeholder?: string): Entry {
     throw new Error('entry() must be called within an app context');
   }
   return new Entry(globalContext, placeholder);
+}
+
+/**
+ * Create a multi-line entry (text area) widget
+ */
+export function multilineentry(placeholder?: string, wrapping?: 'off' | 'word' | 'break'): MultiLineEntry {
+  if (!globalContext) {
+    throw new Error('multilineentry() must be called within an app context');
+  }
+  return new MultiLineEntry(globalContext, placeholder, wrapping);
+}
+
+/**
+ * Create a password entry widget (masked text input)
+ */
+export function passwordentry(placeholder?: string): PasswordEntry {
+  if (!globalContext) {
+    throw new Error('passwordentry() must be called within an app context');
+  }
+  return new PasswordEntry(globalContext, placeholder);
+}
+
+/**
+ * Create a separator widget (horizontal line)
+ */
+export function separator(): Separator {
+  if (!globalContext) {
+    throw new Error('separator() must be called within an app context');
+  }
+  return new Separator(globalContext);
+}
+
+/**
+ * Create a hyperlink widget (clickable URL)
+ */
+export function hyperlink(text: string, url: string): Hyperlink {
+  if (!globalContext) {
+    throw new Error('hyperlink() must be called within an app context');
+  }
+  return new Hyperlink(globalContext, text, url);
 }
 
 /**
@@ -259,7 +299,7 @@ export async function getTheme(): Promise<'dark' | 'light'> {
 }
 
 // Export classes for advanced usage
-export { App, Window, Button, Label, Entry, VBox, HBox, Checkbox, Select, Slider, ProgressBar, Scroll, Grid, RadioGroup, Split, Tabs, Toolbar, Table, List };
+export { App, Window, Button, Label, Entry, MultiLineEntry, PasswordEntry, Separator, Hyperlink, VBox, HBox, Checkbox, Select, Slider, ProgressBar, Scroll, Grid, RadioGroup, Split, Tabs, Toolbar, Table, List };
 export type { AppOptions, WindowOptions };
 
 // Export state management utilities

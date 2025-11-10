@@ -75,6 +75,69 @@ export class Entry extends Widget {
 }
 
 /**
+ * Multi-line text entry widget
+ */
+export class MultiLineEntry extends Widget {
+  constructor(ctx: Context, placeholder?: string, wrapping?: 'off' | 'word' | 'break') {
+    const id = ctx.generateId('multilineentry');
+    super(ctx, id);
+
+    const payload: any = { id, placeholder: placeholder || '' };
+    if (wrapping) {
+      payload.wrapping = wrapping;
+    }
+
+    ctx.bridge.send('createMultiLineEntry', payload);
+    ctx.addToCurrentContainer(id);
+  }
+}
+
+/**
+ * Password entry widget (text is masked)
+ */
+export class PasswordEntry extends Widget {
+  constructor(ctx: Context, placeholder?: string) {
+    const id = ctx.generateId('passwordentry');
+    super(ctx, id);
+
+    ctx.bridge.send('createPasswordEntry', { id, placeholder: placeholder || '' });
+    ctx.addToCurrentContainer(id);
+  }
+}
+
+/**
+ * Separator widget (horizontal or vertical line)
+ */
+export class Separator {
+  private ctx: Context;
+  public id: string;
+
+  constructor(ctx: Context) {
+    this.ctx = ctx;
+    this.id = ctx.generateId('separator');
+
+    ctx.bridge.send('createSeparator', { id: this.id });
+    ctx.addToCurrentContainer(this.id);
+  }
+}
+
+/**
+ * Hyperlink widget (clickable URL)
+ */
+export class Hyperlink {
+  private ctx: Context;
+  public id: string;
+
+  constructor(ctx: Context, text: string, url: string) {
+    this.ctx = ctx;
+    this.id = ctx.generateId('hyperlink');
+
+    ctx.bridge.send('createHyperlink', { id: this.id, text, url });
+    ctx.addToCurrentContainer(this.id);
+  }
+}
+
+/**
  * VBox container (vertical box layout)
  */
 export class VBox {
