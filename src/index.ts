@@ -1,6 +1,6 @@
 import { App, AppOptions } from './app';
 import { Context } from './context';
-import { Button, Label, Entry, MultiLineEntry, PasswordEntry, Separator, Hyperlink, VBox, HBox, Checkbox, Select, Slider, ProgressBar, Scroll, Grid, RadioGroup, Split, Tabs, Toolbar, Table, List, Center, Card, Accordion, Form } from './widgets';
+import { Button, Label, Entry, MultiLineEntry, PasswordEntry, Separator, Hyperlink, VBox, HBox, Checkbox, Select, Slider, ProgressBar, Scroll, Grid, RadioGroup, Split, Tabs, Toolbar, Table, List, Center, Card, Accordion, Form, Tree, RichText, Image, Border, GridWrap } from './widgets';
 import { Window, WindowOptions } from './window';
 
 // Global context for the declarative API
@@ -323,6 +323,67 @@ export function form(
 }
 
 /**
+ * Create a tree widget for hierarchical data
+ */
+export function tree(rootLabel: string): Tree {
+  if (!globalContext) {
+    throw new Error('tree() must be called within an app context');
+  }
+  return new Tree(globalContext, rootLabel);
+}
+
+/**
+ * Create a rich text widget with formatted text segments
+ */
+export function richtext(segments: Array<{
+  text: string;
+  bold?: boolean;
+  italic?: boolean;
+  monospace?: boolean;
+}>): RichText {
+  if (!globalContext) {
+    throw new Error('richtext() must be called within an app context');
+  }
+  return new RichText(globalContext, segments);
+}
+
+/**
+ * Create an image widget
+ */
+export function image(path: string, fillMode?: 'contain' | 'stretch' | 'original'): Image {
+  if (!globalContext) {
+    throw new Error('image() must be called within an app context');
+  }
+  return new Image(globalContext, path, fillMode);
+}
+
+/**
+ * Create a border layout
+ */
+export function border(config: {
+  top?: () => void;
+  bottom?: () => void;
+  left?: () => void;
+  right?: () => void;
+  center?: () => void;
+}): Border {
+  if (!globalContext) {
+    throw new Error('border() must be called within an app context');
+  }
+  return new Border(globalContext, config);
+}
+
+/**
+ * Create a grid wrap layout
+ */
+export function gridwrap(itemWidth: number, itemHeight: number, builder: () => void): GridWrap {
+  if (!globalContext) {
+    throw new Error('gridwrap() must be called within an app context');
+  }
+  return new GridWrap(globalContext, itemWidth, itemHeight, builder);
+}
+
+/**
  * Set the application theme
  */
 export async function setTheme(theme: 'dark' | 'light'): Promise<void> {
@@ -343,7 +404,7 @@ export async function getTheme(): Promise<'dark' | 'light'> {
 }
 
 // Export classes for advanced usage
-export { App, Window, Button, Label, Entry, MultiLineEntry, PasswordEntry, Separator, Hyperlink, VBox, HBox, Checkbox, Select, Slider, ProgressBar, Scroll, Grid, RadioGroup, Split, Tabs, Toolbar, Table, List, Center, Card, Accordion, Form };
+export { App, Window, Button, Label, Entry, MultiLineEntry, PasswordEntry, Separator, Hyperlink, VBox, HBox, Checkbox, Select, Slider, ProgressBar, Scroll, Grid, RadioGroup, Split, Tabs, Toolbar, Table, List, Center, Card, Accordion, Form, Tree, RichText, Image, Border, GridWrap };
 export type { AppOptions, WindowOptions };
 
 // Export state management utilities

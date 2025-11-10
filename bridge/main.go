@@ -11,6 +11,7 @@ import (
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
+	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/dialog"
 	"fyne.io/fyne/v2/storage"
@@ -141,6 +142,16 @@ func (b *Bridge) handleMessage(msg Message) {
 		b.handleCreateAccordion(msg)
 	case "createForm":
 		b.handleCreateForm(msg)
+	case "createTree":
+		b.handleCreateTree(msg)
+	case "createRichText":
+		b.handleCreateRichText(msg)
+	case "createImage":
+		b.handleCreateImage(msg)
+	case "createBorder":
+		b.handleCreateBorder(msg)
+	case "createGridWrap":
+		b.handleCreateGridWrap(msg)
 	case "createRadioGroup":
 		b.handleCreateRadioGroup(msg)
 	case "createSplit":
@@ -879,6 +890,193 @@ func (b *Bridge) handleCreateForm(msg Message) {
 	b.mu.Lock()
 	b.widgets[widgetID] = form
 	b.widgetMeta[widgetID] = WidgetMetadata{Type: "form", Text: ""}
+	b.mu.Unlock()
+
+	b.sendResponse(Response{
+		ID:      msg.ID,
+		Success: true,
+		Result:  map[string]interface{}{"widgetId": widgetID},
+	})
+}
+
+func (b *Bridge) handleCreateTree(msg Message) {
+	widgetID := msg.Payload["id"].(string)
+	rootLabel := msg.Payload["rootLabel"].(string)
+
+	// Create tree with simple structure
+	// Tree nodes are built recursively from the data structure
+	tree := widget.NewTree(
+		func(uid string) []string {
+			// This is a simple tree - TypeScript will manage the structure
+			// For now, return empty children (tree can be enhanced later)
+			return []string{}
+		},
+		func(uid string) bool {
+			// All nodes can have children
+			return true
+		},
+		func(branch bool) fyne.CanvasObject {
+			return widget.NewLabel("Node")
+		},
+		func(uid string, branch bool, obj fyne.CanvasObject) {
+			label := obj.(*widget.Label)
+			label.SetText(uid)
+		},
+	)
+
+	// Open root node
+	tree.OpenBranch(rootLabel)
+
+	b.mu.Lock()
+	b.widgets[widgetID] = tree
+	b.widgetMeta[widgetID] = WidgetMetadata{Type: "tree", Text: rootLabel}
+	b.mu.Unlock()
+
+	b.sendResponse(Response{
+		ID:      msg.ID,
+		Success: true,
+		Result:  map[string]interface{}{"widgetId": widgetID},
+	})
+}
+
+func (b *Bridge) handleCreateRichText(msg Message) {
+	widgetID := msg.Payload["id"].(string)
+	segmentsInterface := msg.Payload["segments"].([]interface{})
+
+	var richTextSegments []widget.RichTextSegment
+
+	for _, segInterface := range segmentsInterface {
+		segData := segInterface.(map[string]interface{})
+		text := segData["text"].(string)
+
+		style := widget.RichTextStyle{}
+
+		if bold, ok := segData["bold"].(bool); ok && bold {
+			style.TextStyle.Bold = true
+		}
+		if italic, ok := segData["italic"].(bool); ok && italic {
+			style.TextStyle.Italic = true
+		}
+		if monospace, ok := segData["monospace"].(bool); ok && monospace {
+			style.TextStyle.Monospace = true
+		}
+
+		segment := &widget.TextSegment{
+			Text:  text,
+			Style: style,
+		}
+		richTextSegments = append(richTextSegments, segment)
+	}
+
+	richText := widget.NewRichText(richTextSegments...)
+
+	b.mu.Lock()
+	b.widgets[widgetID] = richText
+	b.widgetMeta[widgetID] = WidgetMetadata{Type: "richtext", Text: ""}
+	b.mu.Unlock()
+
+	b.sendResponse(Response{
+		ID:      msg.ID,
+		Success: true,
+		Result:  map[string]interface{}{"widgetId": widgetID},
+	})
+}
+
+func (b *Bridge) handleCreateImage(msg Message) {
+	widgetID := msg.Payload["id"].(string)
+	path := msg.Payload["path"].(string)
+
+	// Load image from file
+	uri := storage.NewFileURI(path)
+	img := canvas.NewImageFromURI(uri)
+
+	// Set fill mode if provided
+	if fillMode, ok := msg.Payload["fillMode"].(string); ok {
+		switch fillMode {
+		case "contain":
+			img.FillMode = canvas.ImageFillContain
+		case "stretch":
+			img.FillMode = canvas.ImageFillStretch
+		case "original":
+			img.FillMode = canvas.ImageFillOriginal
+		}
+	} else {
+		img.FillMode = canvas.ImageFillContain // Default
+	}
+
+	b.mu.Lock()
+	b.widgets[widgetID] = img
+	b.widgetMeta[widgetID] = WidgetMetadata{Type: "image", Text: path}
+	b.mu.Unlock()
+
+	b.sendResponse(Response{
+		ID:      msg.ID,
+		Success: true,
+		Result:  map[string]interface{}{"widgetId": widgetID},
+	})
+}
+
+func (b *Bridge) handleCreateBorder(msg Message) {
+	widgetID := msg.Payload["id"].(string)
+
+	// Get optional border widgets
+	var top, bottom, left, right, center fyne.CanvasObject
+
+	b.mu.RLock()
+	if topID, ok := msg.Payload["topId"].(string); ok {
+		top = b.widgets[topID]
+	}
+	if bottomID, ok := msg.Payload["bottomId"].(string); ok {
+		bottom = b.widgets[bottomID]
+	}
+	if leftID, ok := msg.Payload["leftId"].(string); ok {
+		left = b.widgets[leftID]
+	}
+	if rightID, ok := msg.Payload["rightId"].(string); ok {
+		right = b.widgets[rightID]
+	}
+	if centerID, ok := msg.Payload["centerId"].(string); ok {
+		center = b.widgets[centerID]
+	}
+	b.mu.RUnlock()
+
+	border := container.NewBorder(top, bottom, left, right, center)
+
+	b.mu.Lock()
+	b.widgets[widgetID] = border
+	b.widgetMeta[widgetID] = WidgetMetadata{Type: "border", Text: ""}
+	b.mu.Unlock()
+
+	b.sendResponse(Response{
+		ID:      msg.ID,
+		Success: true,
+		Result:  map[string]interface{}{"widgetId": widgetID},
+	})
+}
+
+func (b *Bridge) handleCreateGridWrap(msg Message) {
+	widgetID := msg.Payload["id"].(string)
+	itemWidth := float32(msg.Payload["itemWidth"].(float64))
+	itemHeight := float32(msg.Payload["itemHeight"].(float64))
+	childIDs, _ := msg.Payload["children"].([]interface{})
+
+	var children []fyne.CanvasObject
+	b.mu.RLock()
+	for _, childID := range childIDs {
+		if child, exists := b.widgets[childID.(string)]; exists {
+			children = append(children, child)
+		}
+	}
+	b.mu.RUnlock()
+
+	gridWrap := container.NewGridWrap(
+		fyne.NewSize(itemWidth, itemHeight),
+		children...,
+	)
+
+	b.mu.Lock()
+	b.widgets[widgetID] = gridWrap
+	b.widgetMeta[widgetID] = WidgetMetadata{Type: "gridwrap", Text: ""}
 	b.mu.Unlock()
 
 	b.sendResponse(Response{

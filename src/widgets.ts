@@ -811,3 +811,170 @@ export class Form {
     ctx.addToCurrentContainer(this.id);
   }
 }
+
+/**
+ * Tree widget for hierarchical data
+ */
+export class Tree {
+  private ctx: Context;
+  public id: string;
+
+  constructor(ctx: Context, rootLabel: string) {
+    this.ctx = ctx;
+    this.id = ctx.generateId('tree');
+
+    ctx.bridge.send('createTree', {
+      id: this.id,
+      rootLabel
+    });
+
+    ctx.addToCurrentContainer(this.id);
+  }
+}
+
+/**
+ * RichText widget for formatted text
+ */
+export class RichText {
+  private ctx: Context;
+  public id: string;
+
+  constructor(ctx: Context, segments: Array<{
+    text: string;
+    bold?: boolean;
+    italic?: boolean;
+    monospace?: boolean;
+  }>) {
+    this.ctx = ctx;
+    this.id = ctx.generateId('richtext');
+
+    ctx.bridge.send('createRichText', {
+      id: this.id,
+      segments
+    });
+
+    ctx.addToCurrentContainer(this.id);
+  }
+}
+
+/**
+ * Image widget for displaying images
+ */
+export class Image {
+  private ctx: Context;
+  public id: string;
+
+  constructor(ctx: Context, path: string, fillMode?: 'contain' | 'stretch' | 'original') {
+    this.ctx = ctx;
+    this.id = ctx.generateId('image');
+
+    const payload: any = {
+      id: this.id,
+      path
+    };
+
+    if (fillMode) {
+      payload.fillMode = fillMode;
+    }
+
+    ctx.bridge.send('createImage', payload);
+    ctx.addToCurrentContainer(this.id);
+  }
+}
+
+/**
+ * Border layout - positions widgets at edges and center
+ */
+export class Border {
+  private ctx: Context;
+  public id: string;
+
+  constructor(ctx: Context, config: {
+    top?: () => void;
+    bottom?: () => void;
+    left?: () => void;
+    right?: () => void;
+    center?: () => void;
+  }) {
+    this.ctx = ctx;
+    this.id = ctx.generateId('border');
+
+    const payload: any = { id: this.id };
+
+    // Build each optional section
+    if (config.top) {
+      ctx.pushContainer();
+      config.top();
+      const children = ctx.popContainer();
+      if (children.length === 1) {
+        payload.topId = children[0];
+      }
+    }
+
+    if (config.bottom) {
+      ctx.pushContainer();
+      config.bottom();
+      const children = ctx.popContainer();
+      if (children.length === 1) {
+        payload.bottomId = children[0];
+      }
+    }
+
+    if (config.left) {
+      ctx.pushContainer();
+      config.left();
+      const children = ctx.popContainer();
+      if (children.length === 1) {
+        payload.leftId = children[0];
+      }
+    }
+
+    if (config.right) {
+      ctx.pushContainer();
+      config.right();
+      const children = ctx.popContainer();
+      if (children.length === 1) {
+        payload.rightId = children[0];
+      }
+    }
+
+    if (config.center) {
+      ctx.pushContainer();
+      config.center();
+      const children = ctx.popContainer();
+      if (children.length === 1) {
+        payload.centerId = children[0];
+      }
+    }
+
+    ctx.bridge.send('createBorder', payload);
+    ctx.addToCurrentContainer(this.id);
+  }
+}
+
+/**
+ * GridWrap layout - wrapping grid with fixed item sizes
+ */
+export class GridWrap {
+  private ctx: Context;
+  public id: string;
+
+  constructor(ctx: Context, itemWidth: number, itemHeight: number, builder: () => void) {
+    this.ctx = ctx;
+    this.id = ctx.generateId('gridwrap');
+
+    // Build children
+    ctx.pushContainer();
+    builder();
+    const children = ctx.popContainer();
+
+    ctx.bridge.send('createGridWrap', {
+      id: this.id,
+      itemWidth,
+      itemHeight,
+      children
+    });
+
+    ctx.addToCurrentContainer(this.id);
+  }
+}

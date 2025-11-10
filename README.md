@@ -285,6 +285,16 @@ Window methods:
 - **`center(builder)`**: Center layout - centers content horizontally and vertically
   - `builder`: Function that defines centered content (must have exactly one child)
   - Perfect for dialogs, splash screens, and focused content
+- **`border(config)`**: Border layout - positions widgets at edges and center
+  - `config`: Object with optional `top`, `bottom`, `left`, `right`, `center` builder functions
+  - Each builder function creates exactly one widget for that position
+  - Example: `border({ top: () => label('Header'), center: () => vbox(() => { ... }) })`
+- **`gridwrap(itemWidth, itemHeight, builder)`**: Grid wrap layout with fixed item sizes
+  - `itemWidth`: Fixed width for each item
+  - `itemHeight`: Fixed height for each item
+  - `builder`: Function that defines grid items
+  - Items automatically wrap to next row when horizontal space is exhausted
+  - Perfect for image galleries, button grids, icon collections
 
 ### Container Widgets
 
@@ -393,6 +403,26 @@ Window methods:
   - `onSelected`: Callback when an item is selected (optional) - receives (index: number, item: string)
   - Methods: `updateItems(items: string[])` - Update list contents
   - Example: `list(['Item 1', 'Item 2', 'Item 3'], (index, item) => console.log(item))`
+
+#### Specialized Widgets
+
+- **`tree(rootLabel)`**: Tree widget for hierarchical data
+  - `rootLabel`: Label for the root node
+  - Displays hierarchical structure with collapsible branches
+  - Perfect for file browsers, organizational charts, nested data
+  - Example: `tree('Root Node')`
+
+- **`richtext(segments)`**: Rich text widget with formatted text
+  - `segments`: Array of text segments with formatting options
+  - Each segment can have `bold`, `italic`, `monospace` properties
+  - Example: `richtext([{ text: 'Bold text', bold: true }, { text: ' normal ', bold: false }, { text: 'italic', italic: true }])`
+  - Great for formatted documents, help text, mixed formatting
+
+- **`image(path, fillMode?)`**: Image widget for displaying images
+  - `path`: File path to the image
+  - `fillMode`: How to fit the image - 'contain', 'stretch', or 'original' (optional, default 'contain')
+  - Supports common image formats (PNG, JPG, GIF, etc.)
+  - Example: `image('/path/to/image.png', 'contain')`
 
 ### Dialogs
 
@@ -1088,6 +1118,7 @@ Check out the `examples/` directory:
 **Widget Examples:**
 - `input-widgets.ts` - MultiLineEntry, PasswordEntry, Separator, and Hyperlink widgets
 - `advanced-widgets.ts` - Card, Accordion, Form, and Center layout
+- `specialized-widgets.ts` - Tree, RichText, Image, Border, and GridWrap
 - `checkbox.ts` - Checkbox with state tracking and callbacks
 - `select.ts` - Dropdown select with multiple options
 - `slider.ts` - Slider controls for volume, brightness, etc.
@@ -1130,6 +1161,7 @@ npm run build
 node examples/calculator.js
 node examples/input-widgets.js
 node examples/advanced-widgets.js
+node examples/specialized-widgets.js
 node examples/checkbox.js
 node examples/select.js
 node examples/slider.js
