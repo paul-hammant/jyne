@@ -15,18 +15,28 @@ vbox(() => {
       label('Image display modes:');
       label('');
 
-      // Note: These images would need to exist in the filesystem
-      // For demonstration, we show what the API looks like
+      // Mode 1: Contain - fits image inside bounds maintaining aspect ratio
       label('1. Contain mode (default) - fits image inside bounds:');
-      label('   image(\'/path/to/image.png\', \'contain\')');
+      image('./examples/assets/red-square.svg', 'contain');
+      label('   Code: image(\'./examples/assets/red-square.svg\', \'contain\')');
       label('');
 
+      separator();
+      label('');
+
+      // Mode 2: Stretch - stretches to fill bounds (may distort)
       label('2. Stretch mode - stretches to fill bounds:');
-      label('   image(\'/path/to/image.png\', \'stretch\')');
+      image('./examples/assets/blue-circle.svg', 'stretch');
+      label('   Code: image(\'./examples/assets/blue-circle.svg\', \'stretch\')');
       label('');
 
+      separator();
+      label('');
+
+      // Mode 3: Original - displays at original size
       label('3. Original mode - displays at original size:');
-      label('   image(\'/path/to/image.png\', \'original\')');
+      image('./examples/assets/green-pattern.svg', 'original');
+      label('   Code: image(\'./examples/assets/green-pattern.svg\', \'original\')');
       label('');
 
       separator();
@@ -41,14 +51,10 @@ vbox(() => {
 
       separator();
       label('');
-      label('Example usage in Tsyne pages:');
+      label('Comparison to HTML:');
       label('');
-      label('const { image } = tsyne;');
-      label('image(\'/assets/logo.png\', \'contain\');');
-      label('');
-
-      label('This is equivalent to HTML:');
-      label('<img src="/assets/logo.png" style="object-fit: contain">');
+      label('HTML: <img src="/assets/logo.png" style="object-fit: contain">');
+      label('Tsyne: image(\'./assets/logo.png\', \'contain\')');
       label('');
     });
   });

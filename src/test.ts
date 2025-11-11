@@ -101,43 +101,88 @@ export class Locator {
 }
 
 /**
- * Assertion helpers for testing
+ * Assertion helpers for testing (Protractor-style)
  */
 export class Expect {
   constructor(private locator: Locator) {}
 
+  /**
+   * Assert that the widget has exact text match
+   */
   async toHaveText(expectedText: string): Promise<void> {
     const actualText = await this.locator.getText();
     if (actualText !== expectedText) {
-      throw new Error(`Expected text to be "${expectedText}" but got "${actualText}"`);
+      throw new Error(`Assertion failed: toHaveText()\n  Expected: "${expectedText}"\n  Actual:   "${actualText}"`);
     }
   }
 
+  /**
+   * Assert that the widget's text contains the expected substring
+   */
   async toContainText(expectedText: string): Promise<void> {
     const actualText = await this.locator.getText();
     if (!actualText.includes(expectedText)) {
-      throw new Error(`Expected text to contain "${expectedText}" but got "${actualText}"`);
+      throw new Error(`Assertion failed: toContainText()\n  Expected text to contain: "${expectedText}"\n  Actual text: "${actualText}"`);
     }
   }
 
+  /**
+   * Assert that the widget is visible (Protractor-style alias for toExist)
+   */
   async toBeVisible(): Promise<void> {
     const widget = await this.locator.find();
     if (!widget) {
-      throw new Error('Expected widget to be visible but it was not found');
+      throw new Error('Assertion failed: toBeVisible()\n  Widget not found in UI');
     }
   }
 
+  /**
+   * Assert that the widget is present (Protractor-style)
+   */
+  async toBePresent(): Promise<void> {
+    const widgets = await this.locator.findAll();
+    if (widgets.length === 0) {
+      throw new Error('Assertion failed: toBePresent()\n  No widgets found matching locator');
+    }
+  }
+
+  /**
+   * Assert that the widget exists
+   */
   async toExist(): Promise<void> {
     const widgets = await this.locator.findAll();
     if (widgets.length === 0) {
-      throw new Error('Expected widget to exist but none were found');
+      throw new Error('Assertion failed: toExist()\n  No widgets found matching locator');
     }
   }
 
+  /**
+   * Assert that the specific number of widgets exist
+   */
   async toHaveCount(count: number): Promise<void> {
     const widgets = await this.locator.findAll();
     if (widgets.length !== count) {
-      throw new Error(`Expected ${count} widgets but found ${widgets.length}`);
+      throw new Error(`Assertion failed: toHaveCount(${count})\n  Expected: ${count} widgets\n  Actual:   ${widgets.length} widgets`);
+    }
+  }
+
+  /**
+   * Assert that widget count is greater than expected
+   */
+  async toHaveCountGreaterThan(count: number): Promise<void> {
+    const widgets = await this.locator.findAll();
+    if (widgets.length <= count) {
+      throw new Error(`Assertion failed: toHaveCountGreaterThan(${count})\n  Expected: > ${count} widgets\n  Actual:   ${widgets.length} widgets`);
+    }
+  }
+
+  /**
+   * Assert that widget count is less than expected
+   */
+  async toHaveCountLessThan(count: number): Promise<void> {
+    const widgets = await this.locator.findAll();
+    if (widgets.length >= count) {
+      throw new Error(`Assertion failed: toHaveCountLessThan(${count})\n  Expected: < ${count} widgets\n  Actual:   ${widgets.length} widgets`);
     }
   }
 }
@@ -241,5 +286,53 @@ export class TestContext {
    */
   async clickWidget(widgetId: string): Promise<void> {
     await this.bridge.send('clickWidget', { widgetId });
+  }
+
+  /**
+   * Assert that a widget with the given text exists
+   * Provides clear error message with expected value
+   */
+  async assertElementPresent(text: string, description?: string): Promise<void> {
+    const widget = await this.findWidget({ text });
+    if (!widget) {
+      const desc = description || `widget with text "${text}"`;
+      throw new Error(`Assertion failed: ${desc} not found in UI`);
+    }
+  }
+
+  /**
+   * Assert that multiple elements are present
+   * More efficient than calling assertElementPresent multiple times
+   */
+  async assertElementsPresent(texts: string[], groupDescription?: string): Promise<void> {
+    const missing: string[] = [];
+    for (const text of texts) {
+      const widget = await this.findWidget({ text });
+      if (!widget) {
+        missing.push(text);
+      }
+    }
+    if (missing.length > 0) {
+      const group = groupDescription || 'elements';
+      throw new Error(`Assertion failed: ${group} missing:\n  ${missing.map(t => `"${t}"`).join('\n  ')}`);
+    }
+  }
+
+  /**
+   * Log a test step for better visibility
+   */
+  logStep(message: string): void {
+    console.log(`  → ${message}`);
+  }
+
+  /**
+   * Log a successful assertion
+   */
+  logAssertion(message: string, expected?: string, actual?: string): void {
+    if (expected && actual) {
+      console.log(`  ✓ ${message}: expected "${expected}", got "${actual}"`);
+    } else {
+      console.log(`  ✓ ${message}`);
+    }
   }
 }
