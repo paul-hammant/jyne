@@ -49,9 +49,9 @@ describe('Draw Button Layout Regression Test', () => {
     let initialY: number | undefined;
     let previousY: number | undefined;
 
-    // Press Draw 20 times - if layout shifts, button becomes unclickable
-    for (let i = 0; i < 20; i++) {
-      console.log(`Draw press ${i + 1}/20...`);
+    // Press Draw 200 times - if layout shifts, button becomes unclickable
+    for (let i = 0; i < 200; i++) {
+      console.log(`Draw press ${i + 1}/200...`);
 
       try {
         const drawButton = ctx.getByText('Draw');
@@ -129,9 +129,9 @@ describe('Draw Button Layout Regression Test', () => {
       }
     }
 
-    console.log('\n✅ SUCCESS: Draw button remained clickable through 20 presses');
+    console.log('\n✅ SUCCESS: Draw button remained clickable through 200 presses');
     console.log('   No layout shift detected\n');
-  }, 60000); // 60 second timeout for 20 draws
+  }, 120000); // 120 second timeout for 200 draws
 
   test('should handle New Game button press followed by Draw', async () => {
     const testApp = await tsyneTest.createApp((app: App) => {

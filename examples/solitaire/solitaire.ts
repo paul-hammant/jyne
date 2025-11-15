@@ -14,6 +14,7 @@
 import { app } from '../../src';
 import type { App } from '../../src/app';
 import type { Window } from '../../src/window';
+import { Image } from '../../src/widgets';
 import * as path from 'path';
 import * as fs from 'fs';
 import { Resvg } from '@resvg/resvg-js';
@@ -705,6 +706,10 @@ export class Game {
 class SolitaireUI {
   private game: Game;
   private statusLabel: any = null;
+  private draw1Image: Image | null = null;
+  private draw2Image: Image | null = null;
+  private draw3Image: Image | null = null;
+  private handImage: Image | null = null;
   private currentStatus: string = 'New game started'; // Current status message preserved across rebuilds
   private renderedCards: Map<string, string>; // Cache of base64-rendered PNGs
   private selectedCard: { type: 'draw' | 'stack' | 'build', index: number, cardIndex?: number } | null = null;
@@ -753,6 +758,9 @@ class SolitaireUI {
    * Handle clicking on a card - select or move
    */
   private async handleCardClick(type: 'draw' | 'stack' | 'build', index: number): Promise<void> {
+    if (type === 'draw' && !this.game.getDrawCards().draw3) {
+      return;
+    }
     // If no card is selected, select this one
     if (!this.selectedCard) {
       this.selectedCard = { type, index };
@@ -917,6 +925,9 @@ class SolitaireUI {
    * Handle drag start on a card - tracks what's being dragged
    */
   private handleCardDrag(type: 'draw' | 'stack' | 'build', index: number, x: number, y: number): void {
+    if (type === 'draw' && !this.game.getDrawCards().draw3) {
+      return;
+    }
     // Only set draggedCard once per drag operation
     if (!this.draggedCard) {
       this.draggedCard = { type, index };
@@ -928,6 +939,10 @@ class SolitaireUI {
    * Handle drag end on a card - determine drop target and move card
    */
   private async handleCardDragEnd(x: number, y: number): Promise<void> {
+    if (this.draggedCard?.type === 'draw' && !this.game.getDrawCards().draw3) {
+      this.draggedCard = null;
+      return;
+    }
     if (!this.draggedCard) {
       return;
     }
@@ -1018,9 +1033,9 @@ class SolitaireUI {
 
             // Draw pile - show face-down cards or empty
             if (this.game.getHandCount() > 0) {
-              this.a.image(backCardImage, 'original');
+              this.handImage = this.a.image(backCardImage, 'original');
             } else {
-              this.a.image(emptySlotImage, 'original');
+              this.handImage = this.a.image(emptySlotImage, 'original');
             }
 
             // Draw slots - show drawn cards or empty slots
@@ -1028,21 +1043,15 @@ class SolitaireUI {
             const draw2Img = draws.draw2 ? this.getCardImage(draws.draw2.imageFilename()) : emptySlotImage;
             const draw3Img = draws.draw3 ? this.getCardImage(draws.draw3.imageFilename()) : emptySlotImage;
 
-            this.a.image(draw1Img, 'original');
-            this.a.image(draw2Img, 'original');
-            // pseudo-declarative lines: imperative if/else for conditional rendering
-            // Make draw3 clickable and draggable if there's a card there
-            if (draws.draw3) {
-              this.a.image(
-                draw3Img,
-                'original',
-                () => this.handleCardClick('draw', 0),
-                (x: number, y: number) => this.handleCardDrag('draw', 0, x, y),
-                (x: number, y: number) => this.handleCardDragEnd(x, y)
-              ).withId('draw3');
-            } else {
-              this.a.image(draw3Img, 'original');
-            }
+            this.draw1Image = this.a.image(draw1Img, 'original');
+            this.draw2Image = this.a.image(draw2Img, 'original');
+            this.draw3Image = this.a.image(
+              draw3Img,
+              'original',
+              () => this.handleCardClick('draw', 0),
+              (x: number, y: number) => this.handleCardDrag('draw', 0, x, y),
+              (x: number, y: number) => this.handleCardDragEnd(x, y)
+            ).withId('draw3');
           });
 
           // Build piles (foundations)
@@ -1124,10 +1133,38 @@ class SolitaireUI {
 
   private draw(): void {
     this.game.drawThree();
-    this.rebuildUI();
+    this.updateDrawPile();
     this.updateStatus('Drew cards');
     if (this.game.hasWon()) {
       this.updateStatus('Congratulations! You won!');
+    }
+  }
+
+  private async updateDrawPile(): Promise<void> {
+    // Get base64-rendered images
+    const emptySlotImage = this.getCardImage('back.svg');
+    const backCardImage = this.getCardImage('back.svg');
+
+    // Update hand image
+    if (this.handImage) {
+      const handImageSrc = this.game.getHandCount() > 0 ? backCardImage : emptySlotImage;
+      await this.handImage.updateImage(handImageSrc);
+    }
+
+    // Update draw images
+    const draws = this.game.getDrawCards();
+    const draw1Img = draws.draw1 ? this.getCardImage(draws.draw1.imageFilename()) : emptySlotImage;
+    const draw2Img = draws.draw2 ? this.getCardImage(draws.draw2.imageFilename()) : emptySlotImage;
+    const draw3Img = draws.draw3 ? this.getCardImage(draws.draw3.imageFilename()) : emptySlotImage;
+
+    if (this.draw1Image) {
+      await this.draw1Image.updateImage(draw1Img);
+    }
+    if (this.draw2Image) {
+      await this.draw2Image.updateImage(draw2Img);
+    }
+    if (this.draw3Image) {
+      await this.draw3Image.updateImage(draw3Img);
     }
   }
 
