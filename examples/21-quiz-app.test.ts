@@ -42,7 +42,7 @@ describe('Quiz App Example', () => {
         let currentQuestion = 0;
         let score = 0;
         let answered = false;
-        let selectedAnswer = -1;
+        let selectedAnswer: string | undefined = undefined;
 
         function showQuestion() {
           const q = questions[currentQuestion];
@@ -61,7 +61,7 @@ describe('Quiz App Example', () => {
 
               app.separator();
 
-              app.radiogroup(q.options, -1, (selected) => {
+              app.radiogroup(q.options, undefined, (selected) => {
                 selectedAnswer = selected;
               });
 
@@ -69,11 +69,11 @@ describe('Quiz App Example', () => {
 
               if (!answered) {
                 app.button('Submit Answer', () => {
-                  if (selectedAnswer === -1) {
+                  if (selectedAnswer === undefined) {
                     return;
                   }
                   answered = true;
-                  if (selectedAnswer === q.correct) {
+                  if (selectedAnswer === q.options[q.correct]) {
                     score++;
                   }
                 });
@@ -119,7 +119,7 @@ describe('Quiz App Example', () => {
         let currentQuestion = 0;
         let score = 0;
         let answered = false;
-        let selectedAnswer = -1;
+        let selectedAnswer: string | undefined = undefined;
 
         function showQuestion() {
           const q = questions[currentQuestion];
@@ -130,17 +130,17 @@ describe('Quiz App Example', () => {
               app.label(`Score: ${score}/${currentQuestion}`);
               app.label(q.question);
 
-              app.radiogroup(q.options, -1, (selected) => {
+              app.radiogroup(q.options, undefined, (selected) => {
                 selectedAnswer = selected;
               });
 
               if (!answered) {
                 app.button('Submit Answer', () => {
-                  if (selectedAnswer === -1) {
+                  if (selectedAnswer === undefined) {
                     return;
                   }
                   answered = true;
-                  if (selectedAnswer === q.correct) {
+                  if (selectedAnswer === q.options[q.correct]) {
                     score++;
                   }
                   showResult();
