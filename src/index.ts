@@ -1,6 +1,6 @@
 import { App, AppOptions } from './app';
 import { Context } from './context';
-import { Button, Label, Entry, MultiLineEntry, PasswordEntry, Separator, Hyperlink, VBox, HBox, Checkbox, Select, Slider, ProgressBar, Scroll, Grid, RadioGroup, Split, Tabs, Toolbar, ToolbarAction, Table, List, Center, Card, Accordion, Form, Tree, RichText, Image, Border, GridWrap } from './widgets';
+import { Button, Label, Entry, MultiLineEntry, PasswordEntry, Separator, Hyperlink, VBox, HBox, Checkbox, Select, Slider, ProgressBar, Scroll, Grid, RadioGroup, Split, Tabs, Toolbar, ToolbarAction, Table, List, Calendar, DateSelectedEvent, Center, Card, Accordion, Form, Tree, RichText, Image, Border, GridWrap } from './widgets';
 import { Window, WindowOptions } from './window';
 
 // Global context for the declarative API
@@ -300,6 +300,16 @@ export function list(items: string[], onSelected?: (index: number, item: string)
 }
 
 /**
+ * Create a calendar widget (date picker)
+ */
+export function calendar(initialDate?: Date, onDateSelected?: (event: DateSelectedEvent) => void): Calendar {
+  if (!globalContext) {
+    throw new Error('calendar() must be called within an app context');
+  }
+  return new Calendar(globalContext, initialDate, onDateSelected);
+}
+
+/**
  * Create a center layout (centers content)
  */
 export function center(builder: () => void): Center {
@@ -425,8 +435,8 @@ export async function getTheme(): Promise<'dark' | 'light'> {
 }
 
 // Export classes for advanced usage
-export { App, Window, Button, Label, Entry, MultiLineEntry, PasswordEntry, Separator, Hyperlink, VBox, HBox, Checkbox, Select, Slider, ProgressBar, Scroll, Grid, RadioGroup, Split, Tabs, Toolbar, Table, List, Center, Card, Accordion, Form, Tree, RichText, Image, Border, GridWrap };
-export type { AppOptions, WindowOptions };
+export { App, Window, Button, Label, Entry, MultiLineEntry, PasswordEntry, Separator, Hyperlink, VBox, HBox, Checkbox, Select, Slider, ProgressBar, Scroll, Grid, RadioGroup, Split, Tabs, Toolbar, Table, List, Calendar, Center, Card, Accordion, Form, Tree, RichText, Image, Border, GridWrap };
+export type { AppOptions, WindowOptions, DateSelectedEvent };
 
 // Export state management utilities
 export {

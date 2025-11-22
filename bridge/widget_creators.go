@@ -10,11 +10,13 @@ import (
 	"net/url"
 	"os"
 	"strings"
+	"time"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/widget"
+	xwidget "fyne.io/x/fyne/widget"
 )
 
 func (b *Bridge) handleCreateButton(msg Message) {
@@ -1504,5 +1506,51 @@ func (b *Bridge) handleCreateList(msg Message) {
 	b.sendResponse(Response{
 		ID:      msg.ID,
 		Success: true,
+	})
+}
+
+func (b *Bridge) handleCreateCalendar(msg Message) {
+	widgetID := msg.Payload["id"].(string)
+	callbackID, hasCallback := msg.Payload["callbackId"].(string)
+
+	// Parse initial time if provided (as Unix timestamp in milliseconds)
+	initialTime := time.Now()
+	if timestamp, ok := msg.Payload["time"].(float64); ok {
+		// Convert from milliseconds to seconds for Unix timestamp
+		initialTime = time.UnixMilli(int64(timestamp))
+	}
+
+	// Create the calendar widget using fyne-x
+	calendar := xwidget.NewCalendar(initialTime, func(selectedTime time.Time) {
+		if hasCallback {
+			b.sendEvent(Event{
+				Type:     "callback",
+				WidgetID: widgetID,
+				Data: map[string]interface{}{
+					"callbackId": callbackID,
+					"year":       selectedTime.Year(),
+					"month":      int(selectedTime.Month()),
+					"day":        selectedTime.Day(),
+					"timestamp":  selectedTime.UnixMilli(),
+				},
+			})
+		}
+	})
+
+	b.mu.Lock()
+	b.widgets[widgetID] = calendar
+	b.widgetMeta[widgetID] = WidgetMetadata{
+		Type: "calendar",
+		Text: "",
+	}
+	if hasCallback {
+		b.callbacks[widgetID] = callbackID
+	}
+	b.mu.Unlock()
+
+	b.sendResponse(Response{
+		ID:      msg.ID,
+		Success: true,
+		Result:  map[string]interface{}{"widgetId": widgetID},
 	})
 }
