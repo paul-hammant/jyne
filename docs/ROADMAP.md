@@ -51,10 +51,10 @@ This document tracks Fyne features **not yet implemented** in Tsyne, with sugges
 
 | Dialog | Fyne Function | Description | Suggested Demo App |
 |--------|---------------|-------------|-------------------|
-| **FolderOpen** | `dialog.ShowFolderOpen` | Folder picker | `project-opener.ts` - Select project directory |
+| ~~**FolderOpen**~~ | ~~`dialog.ShowFolderOpen`~~ | ~~Folder picker~~ | ✅ Implemented - `window.showFolderOpen()` |
 | **ColorPicker** | `dialog.ShowColorPicker` | Color selection | `drawing-app.ts` - Simple paint program |
 | **EntryDialog** | `dialog.ShowEntryDialog` | Quick text input | `rename-dialog.ts` - Rename file/item |
-| **FormDialog** | `dialog.ShowForm` | Form in dialog | `new-contact.ts` - Add contact form dialog |
+| ~~**FormDialog**~~ | ~~`dialog.ShowForm`~~ | ~~Form in dialog~~ | ✅ Implemented - `new-contact.ts` |
 | **CustomDialog** | `dialog.NewCustom` | Custom dialog content | `about-dialog.ts` - Custom about box |
 | **ProgressDialog** | `dialog.ShowProgress` | Progress in dialog | `download-manager.ts` - Download with progress |
 

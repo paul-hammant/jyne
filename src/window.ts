@@ -201,6 +201,88 @@ export class Window {
   }
 
   /**
+   * Shows a folder open dialog and returns the selected folder path
+   * @returns Promise<string | null> - folder path if selected, null if cancelled
+   */
+  async showFolderOpen(): Promise<string | null> {
+    return new Promise((resolve) => {
+      const callbackId = this.ctx.generateId('callback');
+
+      this.ctx.bridge.registerEventHandler(callbackId, (data: any) => {
+        if (data.error || !data.folderPath) {
+          resolve(null);
+        } else {
+          resolve(data.folderPath);
+        }
+      });
+
+      this.ctx.bridge.send('showFolderOpen', {
+        windowId: this.id,
+        callbackId
+      });
+    });
+  }
+
+  /**
+   * Form field definition for showForm dialog
+   */
+
+
+  /**
+   * Shows a form dialog with customizable fields
+   * @param title - Dialog title
+   * @param fields - Array of form field definitions
+   * @param options - Optional confirm/dismiss button text
+   * @returns Promise with submitted status and field values
+   * @example
+   * const result = await win.showForm('Add Contact', [
+   *   { name: 'firstName', label: 'First Name', placeholder: 'John' },
+   *   { name: 'lastName', label: 'Last Name', placeholder: 'Doe' },
+   *   { name: 'email', label: 'Email', type: 'entry', hint: 'e.g. john@example.com' },
+   *   { name: 'category', label: 'Category', type: 'select', options: ['Work', 'Personal', 'Family'] }
+   * ]);
+   * if (result.submitted) {
+   *   console.log('Name:', result.values.firstName, result.values.lastName);
+   * }
+   */
+  async showForm(
+    title: string,
+    fields: Array<{
+      name: string;
+      label: string;
+      type?: 'entry' | 'password' | 'multiline' | 'select' | 'check';
+      placeholder?: string;
+      value?: string;
+      hint?: string;
+      options?: string[]; // For select type
+    }>,
+    options?: {
+      confirmText?: string;
+      dismissText?: string;
+    }
+  ): Promise<{ submitted: boolean; values: Record<string, string | boolean> }> {
+    return new Promise((resolve) => {
+      const callbackId = this.ctx.generateId('callback');
+
+      this.ctx.bridge.registerEventHandler(callbackId, (data: any) => {
+        resolve({
+          submitted: data.submitted,
+          values: data.values || {}
+        });
+      });
+
+      this.ctx.bridge.send('showForm', {
+        windowId: this.id,
+        title,
+        confirmText: options?.confirmText || 'Submit',
+        dismissText: options?.dismissText || 'Cancel',
+        callbackId,
+        fields
+      });
+    });
+  }
+
+  /**
    * Resize the window to the specified dimensions
    */
   async resize(width: number, height: number): Promise<void> {
