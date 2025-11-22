@@ -92,6 +92,16 @@ func (b *Bridge) handleMessage(msg Message) {
 		b.handleCreateSplit(msg)
 	case "createTabs":
 		b.handleCreateTabs(msg)
+	case "createNavigation":
+		b.handleCreateNavigation(msg)
+	case "navigationPush":
+		b.handleNavigationPush(msg)
+	case "navigationBack":
+		b.handleNavigationBack(msg)
+	case "navigationForward":
+		b.handleNavigationForward(msg)
+	case "navigationSetTitle":
+		b.handleNavigationSetTitle(msg)
 	case "setText":
 		b.handleSetText(msg)
 	case "getText":
