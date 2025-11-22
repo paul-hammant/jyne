@@ -1,6 +1,6 @@
 import { App, AppOptions } from './app';
 import { Context } from './context';
-import { Button, Label, Entry, MultiLineEntry, PasswordEntry, Separator, Hyperlink, VBox, HBox, Checkbox, Select, Slider, ProgressBar, Scroll, Grid, RadioGroup, Split, Tabs, Toolbar, ToolbarAction, Table, List, Center, Card, Accordion, Form, Tree, RichText, Image, Border, GridWrap } from './widgets';
+import { Button, Label, Entry, MultiLineEntry, PasswordEntry, Separator, Hyperlink, VBox, HBox, Checkbox, Select, Slider, ProgressBar, Scroll, Grid, RadioGroup, Split, Tabs, Toolbar, ToolbarAction, Table, List, Center, Stack, Card, Accordion, Form, Tree, RichText, Image, Border, GridWrap } from './widgets';
 import { Window, WindowOptions } from './window';
 
 // Global context for the declarative API
@@ -310,6 +310,16 @@ export function center(builder: () => void): Center {
 }
 
 /**
+ * Create a stack layout (Z-layering, overlapping children)
+ */
+export function stack(builder: () => void): Stack {
+  if (!globalContext) {
+    throw new Error('stack() must be called within an app context');
+  }
+  return new Stack(globalContext, builder);
+}
+
+/**
  * Create a card container with title, subtitle, and content
  */
 export function card(title: string, subtitle: string, builder: () => void): Card {
@@ -425,7 +435,7 @@ export async function getTheme(): Promise<'dark' | 'light'> {
 }
 
 // Export classes for advanced usage
-export { App, Window, Button, Label, Entry, MultiLineEntry, PasswordEntry, Separator, Hyperlink, VBox, HBox, Checkbox, Select, Slider, ProgressBar, Scroll, Grid, RadioGroup, Split, Tabs, Toolbar, Table, List, Center, Card, Accordion, Form, Tree, RichText, Image, Border, GridWrap };
+export { App, Window, Button, Label, Entry, MultiLineEntry, PasswordEntry, Separator, Hyperlink, VBox, HBox, Checkbox, Select, Slider, ProgressBar, Scroll, Grid, RadioGroup, Split, Tabs, Toolbar, Table, List, Center, Stack, Card, Accordion, Form, Tree, RichText, Image, Border, GridWrap };
 export type { AppOptions, WindowOptions };
 
 // Export state management utilities
