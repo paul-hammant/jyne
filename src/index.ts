@@ -1,6 +1,6 @@
 import { App, AppOptions } from './app';
 import { Context } from './context';
-import { Button, Label, Entry, MultiLineEntry, PasswordEntry, Separator, Hyperlink, VBox, HBox, Checkbox, Select, Slider, ProgressBar, Scroll, Grid, RadioGroup, Split, Tabs, Toolbar, ToolbarAction, Table, List, Center, Card, Accordion, Form, Tree, RichText, Image, Border, GridWrap } from './widgets';
+import { Button, Label, Entry, MultiLineEntry, PasswordEntry, Separator, Hyperlink, VBox, HBox, Checkbox, Select, Slider, ProgressBar, Scroll, Grid, RadioGroup, Split, Tabs, DocTabs, Toolbar, ToolbarAction, Table, List, Center, Card, Accordion, Form, Tree, RichText, Image, Border, GridWrap } from './widgets';
 import { Window, WindowOptions } from './window';
 
 // Global context for the declarative API
@@ -255,6 +255,22 @@ export function tabs(
 }
 
 /**
+ * Create a doctabs container (tabs with close buttons)
+ */
+export function doctabs(
+  tabDefinitions: Array<{title: string, builder: () => void}>,
+  options?: {
+    location?: 'top' | 'bottom' | 'leading' | 'trailing';
+    onClosed?: (tabIndex: number, tabTitle: string) => void;
+  }
+): DocTabs {
+  if (!globalContext) {
+    throw new Error('doctabs() must be called within an app context');
+  }
+  return new DocTabs(globalContext, tabDefinitions, options);
+}
+
+/**
  * Create a toolbar
  */
 export function toolbar(
@@ -425,7 +441,7 @@ export async function getTheme(): Promise<'dark' | 'light'> {
 }
 
 // Export classes for advanced usage
-export { App, Window, Button, Label, Entry, MultiLineEntry, PasswordEntry, Separator, Hyperlink, VBox, HBox, Checkbox, Select, Slider, ProgressBar, Scroll, Grid, RadioGroup, Split, Tabs, Toolbar, Table, List, Center, Card, Accordion, Form, Tree, RichText, Image, Border, GridWrap };
+export { App, Window, Button, Label, Entry, MultiLineEntry, PasswordEntry, Separator, Hyperlink, VBox, HBox, Checkbox, Select, Slider, ProgressBar, Scroll, Grid, RadioGroup, Split, Tabs, DocTabs, Toolbar, Table, List, Center, Card, Accordion, Form, Tree, RichText, Image, Border, GridWrap };
 export type { AppOptions, WindowOptions };
 
 // Export state management utilities
