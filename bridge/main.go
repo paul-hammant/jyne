@@ -92,6 +92,8 @@ func (b *Bridge) handleMessage(msg Message) {
 		b.handleCreateSplit(msg)
 	case "createTabs":
 		b.handleCreateTabs(msg)
+	case "createThemeOverride":
+		b.handleCreateThemeOverride(msg)
 	case "setText":
 		b.handleSetText(msg)
 	case "getText":
