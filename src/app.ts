@@ -1,7 +1,7 @@
 import { BridgeConnection } from './fynebridge';
 import { Context } from './context';
 import { Window, WindowOptions } from './window';
-import { Button, Label, Entry, MultiLineEntry, PasswordEntry, Separator, Hyperlink, VBox, HBox, Checkbox, Select, Slider, ProgressBar, Scroll, Grid, RadioGroup, Split, Tabs, Toolbar, ToolbarAction, Table, List, Center, Max, Card, Accordion, Form, Tree, RichText, Image, Border, GridWrap } from './widgets';
+import { Button, Label, Entry, MultiLineEntry, PasswordEntry, Separator, Hyperlink, VBox, HBox, Checkbox, Select, Slider, ProgressBar, Scroll, Grid, RadioGroup, Split, Tabs, Toolbar, ToolbarAction, Table, List, Center, Max, Card, Accordion, Form, Tree, RichText, Image, Border, GridWrap, Icon, ThemeIconName } from './widgets';
 import { initializeGlobals } from './globals';
 import { ResourceManager } from './resources';
 
@@ -170,6 +170,10 @@ export class App {
     onDragEnd?: (x: number, y: number) => void
   ): Image {
     return new Image(this.ctx, pathOrOptions, fillMode, onClick, onDrag, onDragEnd);
+  }
+
+  icon(iconName: ThemeIconName): Icon {
+    return new Icon(this.ctx, iconName);
   }
 
   border(config: { top?: () => void; bottom?: () => void; left?: () => void; right?: () => void; center?: () => void; }): Border {

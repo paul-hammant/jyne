@@ -14,6 +14,7 @@ import (
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/container"
+	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
 )
 
@@ -1504,5 +1505,243 @@ func (b *Bridge) handleCreateList(msg Message) {
 	b.sendResponse(Response{
 		ID:      msg.ID,
 		Success: true,
+	})
+}
+
+// getThemeIcon returns the Fyne theme icon resource for a given icon name
+func getThemeIcon(iconName string) fyne.Resource {
+	switch iconName {
+	// Navigation & UI
+	case "NavigateBack":
+		return theme.NavigateBackIcon()
+	case "NavigateNext":
+		return theme.NavigateNextIcon()
+	case "Menu":
+		return theme.MenuIcon()
+	case "MenuExpand":
+		return theme.MenuExpandIcon()
+	case "MenuDropDown":
+		return theme.MenuDropDownIcon()
+	case "MenuDropUp":
+		return theme.MenuDropUpIcon()
+	case "MoveUp":
+		return theme.MoveUpIcon()
+	case "MoveDown":
+		return theme.MoveDownIcon()
+
+	// File & Folder
+	case "File":
+		return theme.FileIcon()
+	case "FileApplication":
+		return theme.FileApplicationIcon()
+	case "FileAudio":
+		return theme.FileAudioIcon()
+	case "FileImage":
+		return theme.FileImageIcon()
+	case "FileText":
+		return theme.FileTextIcon()
+	case "FileVideo":
+		return theme.FileVideoIcon()
+	case "Folder":
+		return theme.FolderIcon()
+	case "FolderNew":
+		return theme.FolderNewIcon()
+	case "FolderOpen":
+		return theme.FolderOpenIcon()
+
+	// Document
+	case "Document":
+		return theme.DocumentIcon()
+	case "DocumentCreate":
+		return theme.DocumentCreateIcon()
+	case "DocumentPrint":
+		return theme.DocumentPrintIcon()
+	case "DocumentSave":
+		return theme.DocumentSaveIcon()
+
+	// Media
+	case "MediaPlay":
+		return theme.MediaPlayIcon()
+	case "MediaPause":
+		return theme.MediaPauseIcon()
+	case "MediaStop":
+		return theme.MediaStopIcon()
+	case "MediaRecord":
+		return theme.MediaRecordIcon()
+	case "MediaReplay":
+		return theme.MediaReplayIcon()
+	case "MediaMusic":
+		return theme.MediaMusicIcon()
+	case "MediaPhoto":
+		return theme.MediaPhotoIcon()
+	case "MediaVideo":
+		return theme.MediaVideoIcon()
+	case "MediaFastForward":
+		return theme.MediaFastForwardIcon()
+	case "MediaFastRewind":
+		return theme.MediaFastRewindIcon()
+	case "MediaSkipNext":
+		return theme.MediaSkipNextIcon()
+	case "MediaSkipPrevious":
+		return theme.MediaSkipPreviousIcon()
+
+	// Content Actions
+	case "ContentAdd":
+		return theme.ContentAddIcon()
+	case "ContentRemove":
+		return theme.ContentRemoveIcon()
+	case "ContentCopy":
+		return theme.ContentCopyIcon()
+	case "ContentCut":
+		return theme.ContentCutIcon()
+	case "ContentPaste":
+		return theme.ContentPasteIcon()
+	case "ContentClear":
+		return theme.ContentClearIcon()
+	case "ContentUndo":
+		return theme.ContentUndoIcon()
+	case "ContentRedo":
+		return theme.ContentRedoIcon()
+
+	// Dialog & Status
+	case "Confirm":
+		return theme.ConfirmIcon()
+	case "Cancel":
+		return theme.CancelIcon()
+	case "Delete":
+		return theme.DeleteIcon()
+	case "Error":
+		return theme.ErrorIcon()
+	case "Warning":
+		return theme.WarningIcon()
+	case "Info":
+		return theme.InfoIcon()
+	case "Question":
+		return theme.QuestionIcon()
+
+	// Form Elements
+	case "CheckButton":
+		return theme.CheckButtonIcon()
+	case "CheckButtonChecked":
+		return theme.CheckButtonCheckedIcon()
+	case "RadioButton":
+		return theme.RadioButtonIcon()
+	case "RadioButtonChecked":
+		return theme.RadioButtonCheckedIcon()
+
+	// Miscellaneous
+	case "Home":
+		return theme.HomeIcon()
+	case "Settings":
+		return theme.SettingsIcon()
+	case "Help":
+		return theme.HelpIcon()
+	case "Search":
+		return theme.SearchIcon()
+	case "SearchReplace":
+		return theme.SearchReplaceIcon()
+	case "Visibility":
+		return theme.VisibilityIcon()
+	case "VisibilityOff":
+		return theme.VisibilityOffIcon()
+	case "Account":
+		return theme.AccountIcon()
+	case "Login":
+		return theme.LoginIcon()
+	case "Logout":
+		return theme.LogoutIcon()
+	case "Upload":
+		return theme.UploadIcon()
+	case "Download":
+		return theme.DownloadIcon()
+	case "History":
+		return theme.HistoryIcon()
+	case "Computer":
+		return theme.ComputerIcon()
+	case "Storage":
+		return theme.StorageIcon()
+	case "Grid":
+		return theme.GridIcon()
+	case "List":
+		return theme.ListIcon()
+	case "MailAttachment":
+		return theme.MailAttachmentIcon()
+	case "MailCompose":
+		return theme.MailComposeIcon()
+	case "MailForward":
+		return theme.MailForwardIcon()
+	case "MailReply":
+		return theme.MailReplyIcon()
+	case "MailReplyAll":
+		return theme.MailReplyAllIcon()
+	case "MailSend":
+		return theme.MailSendIcon()
+	case "ZoomFit":
+		return theme.ZoomFitIcon()
+	case "ZoomIn":
+		return theme.ZoomInIcon()
+	case "ZoomOut":
+		return theme.ZoomOutIcon()
+	case "ViewFullScreen":
+		return theme.ViewFullScreenIcon()
+	case "ViewRefresh":
+		return theme.ViewRefreshIcon()
+	case "ViewRestore":
+		return theme.ViewRestoreIcon()
+	case "ColorAchromatic":
+		return theme.ColorAchromaticIcon()
+	case "ColorChromatic":
+		return theme.ColorChromaticIcon()
+	case "ColorPalette":
+		return theme.ColorPaletteIcon()
+	case "MoreHorizontal":
+		return theme.MoreHorizontalIcon()
+	case "MoreVertical":
+		return theme.MoreVerticalIcon()
+
+	// Volume
+	case "VolumeMute":
+		return theme.VolumeMuteIcon()
+	case "VolumeDown":
+		return theme.VolumeDownIcon()
+	case "VolumeUp":
+		return theme.VolumeUpIcon()
+
+	// Brightness
+	case "BrokenImage":
+		return theme.BrokenImageIcon()
+
+	default:
+		return nil
+	}
+}
+
+func (b *Bridge) handleCreateIcon(msg Message) {
+	widgetID := msg.Payload["id"].(string)
+	iconName := msg.Payload["iconName"].(string)
+
+	// Get the theme icon resource
+	iconResource := getThemeIcon(iconName)
+	if iconResource == nil {
+		b.sendResponse(Response{
+			ID:      msg.ID,
+			Success: false,
+			Error:   fmt.Sprintf("Unknown icon name: %s", iconName),
+		})
+		return
+	}
+
+	// Create the Icon widget
+	icon := widget.NewIcon(iconResource)
+
+	b.mu.Lock()
+	b.widgets[widgetID] = icon
+	b.widgetMeta[widgetID] = WidgetMetadata{Type: "icon", Text: iconName}
+	b.mu.Unlock()
+
+	b.sendResponse(Response{
+		ID:      msg.ID,
+		Success: true,
+		Result:  map[string]interface{}{"widgetId": widgetID},
 	})
 }
