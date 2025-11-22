@@ -237,6 +237,12 @@ func (b *Bridge) handleMessage(msg Message) {
 		b.handleProcessHoverWrappers(msg)
 	case "setWidgetHoverable":
 		b.handleSetWidgetHoverable(msg)
+	case "createDateEntry":
+		b.handleCreateDateEntry(msg)
+	case "setDate":
+		b.handleSetDate(msg)
+	case "getDate":
+		b.handleGetDate(msg)
 	default:
 		b.sendResponse(Response{
 			ID:      msg.ID,
