@@ -1,6 +1,6 @@
 import { App, AppOptions } from './app';
 import { Context } from './context';
-import { Button, Label, Entry, MultiLineEntry, PasswordEntry, Separator, Hyperlink, VBox, HBox, Checkbox, Select, Slider, ProgressBar, Scroll, Grid, RadioGroup, Split, Tabs, Toolbar, ToolbarAction, Table, List, Center, Card, Accordion, Form, Tree, RichText, Image, Border, GridWrap } from './widgets';
+import { Button, Label, Entry, MultiLineEntry, PasswordEntry, Separator, Hyperlink, VBox, HBox, Checkbox, Select, Slider, ProgressBar, Scroll, Grid, RadioGroup, Split, Tabs, Toolbar, ToolbarAction, Table, List, Center, Card, Accordion, Form, Tree, RichText, Image, Border, GridWrap, ThemeOverride } from './widgets';
 import { Window, WindowOptions } from './window';
 
 // Global context for the declarative API
@@ -405,6 +405,18 @@ export function gridwrap(itemWidth: number, itemHeight: number, builder: () => v
 }
 
 /**
+ * Create a theme override container that applies a specific theme to its contents
+ * @param variant The theme variant to apply ('dark' or 'light')
+ * @param builder Function that creates the content
+ */
+export function themeoverride(variant: 'dark' | 'light', builder: () => void): ThemeOverride {
+  if (!globalContext) {
+    throw new Error('themeoverride() must be called within an app context');
+  }
+  return new ThemeOverride(globalContext, variant, builder);
+}
+
+/**
  * Set the application theme
  */
 export async function setTheme(theme: 'dark' | 'light'): Promise<void> {
@@ -425,7 +437,7 @@ export async function getTheme(): Promise<'dark' | 'light'> {
 }
 
 // Export classes for advanced usage
-export { App, Window, Button, Label, Entry, MultiLineEntry, PasswordEntry, Separator, Hyperlink, VBox, HBox, Checkbox, Select, Slider, ProgressBar, Scroll, Grid, RadioGroup, Split, Tabs, Toolbar, Table, List, Center, Card, Accordion, Form, Tree, RichText, Image, Border, GridWrap };
+export { App, Window, Button, Label, Entry, MultiLineEntry, PasswordEntry, Separator, Hyperlink, VBox, HBox, Checkbox, Select, Slider, ProgressBar, Scroll, Grid, RadioGroup, Split, Tabs, Toolbar, Table, List, Center, Card, Accordion, Form, Tree, RichText, Image, Border, GridWrap, ThemeOverride };
 export type { AppOptions, WindowOptions };
 
 // Export state management utilities
