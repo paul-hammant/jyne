@@ -86,6 +86,10 @@ func (b *Bridge) handleMessage(msg Message) {
 		b.handleCreateBorder(msg)
 	case "createGridWrap":
 		b.handleCreateGridWrap(msg)
+	case "createAdaptiveGrid":
+		b.handleCreateAdaptiveGrid(msg)
+	case "createPadded":
+		b.handleCreatePadded(msg)
 	case "createRadioGroup":
 		b.handleCreateRadioGroup(msg)
 	case "createSplit":

@@ -1,7 +1,7 @@
 import { BridgeConnection } from './fynebridge';
 import { Context } from './context';
 import { Window, WindowOptions } from './window';
-import { Button, Label, Entry, MultiLineEntry, PasswordEntry, Separator, Hyperlink, VBox, HBox, Checkbox, Select, Slider, ProgressBar, Scroll, Grid, RadioGroup, Split, Tabs, Toolbar, ToolbarAction, Table, List, Center, Max, Card, Accordion, Form, Tree, RichText, Image, Border, GridWrap } from './widgets';
+import { Button, Label, Entry, MultiLineEntry, PasswordEntry, Separator, Hyperlink, VBox, HBox, Checkbox, Select, Slider, ProgressBar, Scroll, Grid, RadioGroup, Split, Tabs, Toolbar, ToolbarAction, Table, List, Center, Max, Card, Accordion, Form, Tree, RichText, Image, Border, GridWrap, AdaptiveGrid, Padded } from './widgets';
 import { initializeGlobals } from './globals';
 import { ResourceManager } from './resources';
 
@@ -178,6 +178,14 @@ export class App {
 
   gridwrap(itemWidth: number, itemHeight: number, builder: () => void): GridWrap {
     return new GridWrap(this.ctx, itemWidth, itemHeight, builder);
+  }
+
+  adaptivegrid(rowcols: number, builder: () => void): AdaptiveGrid {
+    return new AdaptiveGrid(this.ctx, rowcols, builder);
+  }
+
+  padded(builder: () => void): Padded {
+    return new Padded(this.ctx, builder);
   }
 
   async run(): Promise<void> {
