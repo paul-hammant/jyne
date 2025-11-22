@@ -223,6 +223,8 @@ func (b *Bridge) handleMessage(msg Message) {
 		b.handleShowWidget(msg)
 	case "registerCustomId":
 		b.handleRegisterCustomId(msg)
+	case "registerTestId":
+		b.handleRegisterTestId(msg)
 	case "getParent":
 		b.handleGetParent(msg)
 	case "setAccessibility":
