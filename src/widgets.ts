@@ -1504,6 +1504,50 @@ export class List {
 }
 
 /**
+ * Date selection event data
+ */
+export interface DateSelectedEvent {
+  year: number;
+  month: number;
+  day: number;
+  timestamp: number;
+}
+
+/**
+ * Calendar widget - date picker that displays a monthly calendar
+ * Uses fyne-x Calendar widget under the hood
+ */
+export class Calendar extends Widget {
+  constructor(ctx: Context, initialDate?: Date, onDateSelected?: (event: DateSelectedEvent) => void) {
+    const id = ctx.generateId('calendar');
+    super(ctx, id);
+
+    const payload: any = { id };
+
+    // Convert Date to Unix timestamp in milliseconds
+    if (initialDate) {
+      payload.time = initialDate.getTime();
+    }
+
+    if (onDateSelected) {
+      const callbackId = ctx.generateId('callback');
+      payload.callbackId = callbackId;
+      ctx.bridge.registerEventHandler(callbackId, (data: any) => {
+        onDateSelected({
+          year: data.year,
+          month: data.month,
+          day: data.day,
+          timestamp: data.timestamp
+        });
+      });
+    }
+
+    ctx.bridge.send('createCalendar', payload);
+    ctx.addToCurrentContainer(id);
+  }
+}
+
+/**
  * Center layout - centers content in the available space
  */
 export class Center {
