@@ -1,6 +1,6 @@
 import { App, AppOptions } from './app';
 import { Context } from './context';
-import { Button, Label, Entry, MultiLineEntry, PasswordEntry, Separator, Hyperlink, VBox, HBox, Checkbox, Select, Slider, ProgressBar, Scroll, Grid, RadioGroup, Split, Tabs, Toolbar, ToolbarAction, Table, List, Center, Card, Accordion, Form, Tree, RichText, Image, Border, GridWrap } from './widgets';
+import { Button, Label, Entry, MultiLineEntry, PasswordEntry, Separator, Hyperlink, VBox, HBox, Checkbox, Select, SelectEntry, Slider, ProgressBar, Scroll, Grid, RadioGroup, Split, Tabs, Toolbar, ToolbarAction, Table, List, Center, Card, Accordion, Form, Tree, RichText, Image, Border, GridWrap } from './widgets';
 import { Window, WindowOptions } from './window';
 
 // Global context for the declarative API
@@ -152,6 +152,22 @@ export function select(options: string[], onSelected?: (selected: string) => voi
     throw new Error('select() must be called within an app context');
   }
   return new Select(globalContext, options, onSelected);
+}
+
+/**
+ * Create a searchable dropdown (SelectEntry) widget
+ */
+export function selectentry(
+  options: string[],
+  placeholder?: string,
+  onChanged?: (text: string) => void,
+  onSubmitted?: (text: string) => void,
+  onSelected?: (selected: string) => void
+): SelectEntry {
+  if (!globalContext) {
+    throw new Error('selectentry() must be called within an app context');
+  }
+  return new SelectEntry(globalContext, options, placeholder, onChanged, onSubmitted, onSelected);
 }
 
 /**
@@ -425,7 +441,7 @@ export async function getTheme(): Promise<'dark' | 'light'> {
 }
 
 // Export classes for advanced usage
-export { App, Window, Button, Label, Entry, MultiLineEntry, PasswordEntry, Separator, Hyperlink, VBox, HBox, Checkbox, Select, Slider, ProgressBar, Scroll, Grid, RadioGroup, Split, Tabs, Toolbar, Table, List, Center, Card, Accordion, Form, Tree, RichText, Image, Border, GridWrap };
+export { App, Window, Button, Label, Entry, MultiLineEntry, PasswordEntry, Separator, Hyperlink, VBox, HBox, Checkbox, Select, SelectEntry, Slider, ProgressBar, Scroll, Grid, RadioGroup, Split, Tabs, Toolbar, Table, List, Center, Card, Accordion, Form, Tree, RichText, Image, Border, GridWrap };
 export type { AppOptions, WindowOptions };
 
 // Export state management utilities
