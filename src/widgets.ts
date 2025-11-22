@@ -1962,3 +1962,87 @@ export class GridWrap {
     ctx.addToCurrentContainer(this.id);
   }
 }
+
+/**
+ * AdaptiveGrid layout - responsive grid that adjusts columns based on width
+ * Creates a grid layout where the number of columns (rowcols) determines
+ * the minimum number of items per row. Items resize to fill available space.
+ */
+export class AdaptiveGrid {
+  private ctx: Context;
+  public id: string;
+
+  constructor(ctx: Context, rowcols: number, builder: () => void) {
+    this.ctx = ctx;
+    this.id = ctx.generateId('adaptivegrid');
+
+    // Build children
+    ctx.pushContainer();
+    builder();
+    const children = ctx.popContainer();
+
+    ctx.bridge.send('createAdaptiveGrid', {
+      id: this.id,
+      rowcols,
+      children
+    });
+
+    ctx.addToCurrentContainer(this.id);
+  }
+
+  /**
+   * Register a custom ID for this container
+   * @param customId Custom ID to register
+   * @returns this for method chaining
+   */
+  withId(customId: string): this {
+    this.ctx.bridge.send('registerCustomId', {
+      widgetId: this.id,
+      customId
+    });
+    return this;
+  }
+}
+
+/**
+ * Padded container - adds standard inset padding around content
+ * Wraps a single child with Fyne's theme-aware padding
+ */
+export class Padded {
+  private ctx: Context;
+  public id: string;
+
+  constructor(ctx: Context, builder: () => void) {
+    this.ctx = ctx;
+    this.id = ctx.generateId('padded');
+
+    // Build child content
+    ctx.pushContainer();
+    builder();
+    const children = ctx.popContainer();
+
+    if (children.length !== 1) {
+      throw new Error('Padded must have exactly one child');
+    }
+
+    ctx.bridge.send('createPadded', {
+      id: this.id,
+      childId: children[0]
+    });
+
+    ctx.addToCurrentContainer(this.id);
+  }
+
+  /**
+   * Register a custom ID for this container
+   * @param customId Custom ID to register
+   * @returns this for method chaining
+   */
+  withId(customId: string): this {
+    this.ctx.bridge.send('registerCustomId', {
+      widgetId: this.id,
+      customId
+    });
+    return this;
+  }
+}
