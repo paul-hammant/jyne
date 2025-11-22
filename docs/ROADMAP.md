@@ -122,11 +122,11 @@ This document tracks Fyne features **not yet implemented** in Tsyne, with sugges
 
 | Feature | Description | Suggested Demo |
 |---------|-------------|----------------|
-| **getByTestId** | Select by data-testid | Add testId option to widgets |
-| **getByRole** | Select by ARIA role | Accessibility selectors |
-| **getByLabel** | Select by form label | Form testing |
-| **Visual Regression** | Screenshot comparison | `visual-regression.test.ts` |
-| **Accessibility Audit** | a11y validation | `accessibility.test.ts` |
+| ~~**getByTestId**~~ | ~~Select by data-testid~~ | ~~Add testId option to widgets~~ | **IMPLEMENTED** |
+| ~~**getByRole**~~ | ~~Select by ARIA role~~ | ~~Accessibility selectors~~ | **IMPLEMENTED** |
+| ~~**getByLabel**~~ | ~~Select by form label~~ | ~~Form testing~~ | **IMPLEMENTED** |
+| ~~**Visual Regression**~~ | ~~Screenshot comparison~~ | ~~`visual-regression.test.ts`~~ | **IMPLEMENTED** |
+| ~~**Accessibility Audit**~~ | ~~a11y validation~~ | ~~`accessibility-audit.test.ts`~~ | **IMPLEMENTED** |
 
 ---
 
