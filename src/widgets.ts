@@ -1962,3 +1962,60 @@ export class GridWrap {
     ctx.addToCurrentContainer(this.id);
   }
 }
+
+/**
+ * Available theme icon names for the Icon widget
+ */
+export type ThemeIconName =
+  // Navigation & UI
+  | 'NavigateBack' | 'NavigateNext'
+  | 'Menu' | 'MenuExpand' | 'MenuDropDown' | 'MenuDropUp'
+  | 'MoveUp' | 'MoveDown'
+  // File & Folder
+  | 'File' | 'FileApplication' | 'FileAudio' | 'FileImage' | 'FileText' | 'FileVideo'
+  | 'Folder' | 'FolderNew' | 'FolderOpen'
+  // Document
+  | 'Document' | 'DocumentCreate' | 'DocumentPrint' | 'DocumentSave'
+  // Media
+  | 'MediaPlay' | 'MediaPause' | 'MediaStop' | 'MediaRecord' | 'MediaReplay'
+  | 'MediaMusic' | 'MediaPhoto' | 'MediaVideo'
+  | 'MediaFastForward' | 'MediaFastRewind' | 'MediaSkipNext' | 'MediaSkipPrevious'
+  // Content Actions
+  | 'ContentAdd' | 'ContentRemove' | 'ContentCopy' | 'ContentCut' | 'ContentPaste'
+  | 'ContentClear' | 'ContentUndo' | 'ContentRedo'
+  // Dialog & Status
+  | 'Confirm' | 'Cancel' | 'Delete' | 'Error' | 'Warning' | 'Info' | 'Question'
+  // Form Elements
+  | 'CheckButton' | 'CheckButtonChecked' | 'RadioButton' | 'RadioButtonChecked'
+  // Miscellaneous
+  | 'Home' | 'Settings' | 'Help' | 'Search' | 'SearchReplace'
+  | 'Visibility' | 'VisibilityOff'
+  | 'Account' | 'Login' | 'Logout'
+  | 'Upload' | 'Download' | 'History'
+  | 'Computer' | 'Storage' | 'Grid' | 'List'
+  | 'MailAttachment' | 'MailCompose' | 'MailForward' | 'MailReply' | 'MailReplyAll' | 'MailSend'
+  | 'ZoomFit' | 'ZoomIn' | 'ZoomOut'
+  | 'ViewFullScreen' | 'ViewRefresh' | 'ViewRestore'
+  | 'ColorAchromatic' | 'ColorChromatic' | 'ColorPalette'
+  | 'MoreHorizontal' | 'MoreVertical'
+  // Volume
+  | 'VolumeMute' | 'VolumeDown' | 'VolumeUp'
+  // Other
+  | 'BrokenImage';
+
+/**
+ * Icon widget - displays a theme icon
+ * @example
+ * a.icon('Home');
+ * a.icon('Settings');
+ * a.icon('MediaPlay');
+ */
+export class Icon extends Widget {
+  constructor(ctx: Context, iconName: ThemeIconName) {
+    const id = ctx.generateId('icon');
+    super(ctx, id);
+
+    ctx.bridge.send('createIcon', { id, iconName });
+    ctx.addToCurrentContainer(id);
+  }
+}
